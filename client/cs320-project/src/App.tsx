@@ -1,5 +1,6 @@
 import React from "react";
 import AssignmentBoard from "./components/Assignment";
+import Calendar from "./components/Calendar";
 
 const App: React.FC = () => {
   return (
@@ -11,6 +12,7 @@ const App: React.FC = () => {
         padding: "40px",
       }}
     >
+      <Calendar></Calendar>
       <AssignmentBoard />
     </div>
   );
