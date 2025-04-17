@@ -1,0 +1,30 @@
+.seven-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr); /* Default: 2 columns */
+  }
+  
+  @media (min-width: 480px) {
+    .seven-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .seven-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .seven-grid {
+      grid-template-columns: repeat(7, 1fr);
+    }
+  }
+  
+  .grid-item {
+    background-color: #eee;
+    padding: 1rem;
+    text-align: center;
+    border-radius: 8px;
+  }
