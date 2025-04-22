@@ -3,8 +3,11 @@ import WelcomePage from "./components/WelcomePage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
+import React from "react";
+import AssignmentBoard from "./components/Assignment";
+import Calendar from "./components/Calendar";
 
-function App() {
+const App: React.FC = () => {
   return (
     // <div>
     //   <Calendar></Calendar>
@@ -16,7 +19,18 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
       </Routes>
     </Router>
+    <div
+      style={{
+        fontFamily: "sans-serif",
+        backgroundColor: "#ece8e4",
+        minHeight: "100vh",
+        padding: "40px",
+      }}
+    >
+      <Calendar></Calendar>
+      <AssignmentBoard />
+    </div>
   );
-}
+};
 
 export default App;
