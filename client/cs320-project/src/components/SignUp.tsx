@@ -16,7 +16,12 @@ const SignUp = () => {
     }
 
     // DATABASE/BACKEND TODO: implement firebase auth and data info here
-    console.log("Creating account for:", { name, email, password });
+    console.log("Creating account for:", {
+      firstName,
+      lastName,
+      email,
+      password,
+    });
     setError("");
   };
 
