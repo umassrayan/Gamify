@@ -67,17 +67,17 @@ const AssignmentBoard: React.FC = () => {
     <div
       style={{
         backgroundColor: "#f4f1ee",
-        padding: "20px",
+        // padding: "20px",
         borderRadius: "8px",
       }}
     >
-      <h2 style={{ color: "#5a4c42" }}>Assignment Board</h2>
+      {/* <h2 style={{ color: "#5a4c42" }}>Assignments</h2> */}
       <table
         style={{
           width: "100%",
           borderCollapse: "collapse",
           backgroundColor: "#fff",
-          border: "1px solid #ccc",
+          border: "none", // removed outer border
           borderRadius: "4px",
           overflow: "hidden",
         }}
