@@ -11,6 +11,7 @@ import AssignmentBoard from "./components/Assignment";
 import ProgressBar from "./components/ProgressBar";
 import Account from "./components/Account";
 import AccountSettings from "./components/AccountSettings";
+// import Sidebar from "./components/Sidebar";
 
 const App: React.FC = () => {
   return (
@@ -55,34 +56,34 @@ const App: React.FC = () => {
         />
         <Route path="/AccountSettings" element={<AccountSettings />} />
       </Routes>
-
-import Sidebar from "./components/Sidebar";
-
-const App: React.FC = () => {
-  return (
-    <Router>
-      <div style={{ display: "flex" }}>
-        <Sidebar />
-        <div
-          style={{
-            flex: 1,
-            fontFamily: "sans-serif",
-            backgroundColor: "#ece8e4",
-            minHeight: "100vh",
-            padding: "40px",
-          }}
-        >
-          <Routes>
-            <Route path="/" element={<WelcomePage />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/assignments" element={<AssignmentBoard />} />
-          </Routes>
-        </div>
-      </div>
     </Router>
   );
 };
+// const App: React.FC = () => {
+//   return (
+//     <Router>
+//       <div style={{ display: "flex" }}>
+//         <Sidebar />
+//         <div
+//           style={{
+//             flex: 1,
+//             fontFamily: "sans-serif",
+//             backgroundColor: "#ece8e4",
+//             minHeight: "100vh",
+//             padding: "40px",
+//           }}
+//         >
+//           <Routes>
+//             <Route path="/" element={<WelcomePage />} />
+//             <Route path="/signin" element={<SignIn />} />
+//             <Route path="/signup" element={<SignUp />} />
+//             <Route path="/calendar" element={<Calendar />} />
+//             <Route path="/assignments" element={<AssignmentBoard />} />
+//           </Routes>
+//         </div>
+//       </div>
+//     </Router>
+//   );
+// };
 
 export default App;
