@@ -49,9 +49,9 @@ function Calendar() {
           backgroundColor: "#E9E8E0",
           display: "grid",
           gridTemplateColumns: "repeat(7, 2fr)",
-          gap: ".5rem",
-          padding: "1rem",
-          borderRadius: "15px",
+          gap: ".25rem",
+          padding: ".75rem",
+          borderRadius: "25px",
         }}
       >
         {dates.map((date, i) => (
@@ -59,10 +59,11 @@ function Calendar() {
             key={i}
             style={{
               backgroundColor: "#FFFFFF",
-              padding: "1rem",
+              padding: ".5rem",
               textAlign: "center",
-              borderRadius: "20px",
-              minHeight: "95vh",
+              borderRadius: "25px",
+              minHeight: "45vh",
+              minWidth: "14vh",
               display: "flex",
               flexDirection: "column",
               fontSize: "1.5rem",
@@ -86,10 +87,10 @@ function Calendar() {
             </div>
             <button //button to add events
               style={{
-                padding: "0.5rem 1rem",
+                padding: "0.5rem 0.5rem",
                 fontSize: "1rem",
                 borderRadius: "8px",
-                minHeight: "85vh",
+                minHeight: "45vh",
                 border: "none",
                 backgroundColor: "white",
                 cursor: "pointer",
@@ -122,7 +123,7 @@ function Calendar() {
               backgroundColor: "#6E645E",
               padding: "2rem",
               borderRadius: "10px",
-              width: "500px",
+              width: "400px",
               display: "flex",
               flexDirection: "column",
               gap: "1rem",
@@ -143,7 +144,7 @@ function Calendar() {
               value={InputName}
               onChange={(e) => setInputName(e.target.value)}
               style={{
-                padding: "0.5rem",
+                padding: "1rem",
                 fontSize: "1rem",
                 borderRadius: "10px",
                 backgroundColor: "white",
@@ -154,7 +155,7 @@ function Calendar() {
                 style={{
                   fontSize: "1rem",
                   color: "white",
-                  marginTop: "14px",
+                  marginTop: "10px",
                 }}
               >
                 Time
