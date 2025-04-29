@@ -1,15 +1,6 @@
 import { useState } from "react";
 
 const days = [" SUN", " MON", " TUE", " WED", " THU", " FRI", " SAT"];
-// const dayOfWeek = [
-//   "Sunday",
-//   "Monday",
-//   "Tuesday",
-//   "Wednesday",
-//   "Thursday",
-//   "Friday",
-//   "Saturday",
-// ];
 const dates = [13, 14, 15, 16, 17, 18, 19];
 
 function Calendar() {
@@ -20,17 +11,18 @@ function Calendar() {
       .map(() => [])
   );
   const [modalOpen, setModalOpen] = useState(false);
-  const [currentDayIndex, setCurrentDayIndex] = useState<number | null>(null);
   const [InputName, setInputName] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [date, setDate] = useState("");
 
   const handleAddEvent = () => {
-    //Right now the added stuff becomes bullet points
-    if (InputName && currentDayIndex !== null) {
+    //TODO: Right now the added stuff is wrong, database people please help
+    if (InputName && date !== null) {
+      const dateReal = new Date(date);
       const updatedEvents = [...events];
-      updatedEvents[currentDayIndex] = [
-        ...updatedEvents[currentDayIndex],
+      updatedEvents[dateReal.getDate()] = [
+        ...updatedEvents[dateReal.getDate()],
         `${startTime} – ${endTime}: ${InputName}`,
       ];
       setEvents(updatedEvents);
@@ -38,6 +30,7 @@ function Calendar() {
     setInputName("");
     setStartTime("");
     setEndTime("");
+    setDate("");
     setModalOpen(false);
   };
 
@@ -47,10 +40,11 @@ function Calendar() {
         style={{
           //Columns
           backgroundColor: "#E9E8E0",
+          height: "60vh",
           display: "grid",
           gridTemplateColumns: "repeat(7, 2fr)",
           gap: ".25rem",
-          padding: ".75rem",
+          padding: "1rem",
           borderRadius: "25px",
         }}
       >
@@ -96,7 +90,6 @@ function Calendar() {
                 cursor: "pointer",
               }}
               onClick={() => {
-                setCurrentDayIndex(i);
                 setModalOpen(true);
               }}
             ></button>
@@ -143,53 +136,33 @@ function Calendar() {
               placeholder="Event Name"
               value={InputName}
               onChange={(e) => setInputName(e.target.value)}
-              style={{
-                padding: "1rem",
-                fontSize: "1rem",
-                borderRadius: "10px",
-                backgroundColor: "white",
-              }}
+              style={styles.input}
             />
+
             <div style={{ display: "flex", gap: "0.5rem" }}>
-              <h1
-                style={{
-                  fontSize: "1rem",
-                  color: "white",
-                  marginTop: "10px",
-                }}
-              >
-                Time
-              </h1>
+              <h1 style={styles.inputText}>Date</h1>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <h1 style={styles.inputText}>Time</h1>
               <input
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                style={{
-                  padding: "0.5rem",
-                  fontSize: "1rem",
-                  borderRadius: "10px",
-                  backgroundColor: "white",
-                }}
+                style={styles.input}
               />
-              <h1
-                style={{
-                  fontSize: "1rem",
-                  color: "white",
-                  marginTop: "14px",
-                }}
-              >
-                -
-              </h1>
+              <h1 style={styles.inputText}>-</h1>
               <input
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                style={{
-                  padding: "0.5rem",
-                  fontSize: "1rem",
-                  borderRadius: "10px",
-                  backgroundColor: "white",
-                }}
+                style={styles.input}
               />
             </div>
             <div
@@ -216,7 +189,6 @@ function Calendar() {
                 style={{
                   padding: "0.5rem 1rem",
                   backgroundColor: "#BEB5AA",
-                  color: "#4B382D",
                   border: "none",
                   borderRadius: "5px",
                 }}
@@ -230,5 +202,20 @@ function Calendar() {
     </>
   );
 }
+
+const styles: { [key: string]: React.CSSProperties } = {
+  input: {
+    padding: "0.5rem",
+    fontSize: "1rem",
+    borderRadius: "10px",
+    backgroundColor: "white",
+    border: "none",
+  },
+  inputText: {
+    fontSize: "1rem",
+    color: "white",
+    marginTop: "12px",
+  },
+};
 
 export default Calendar;
