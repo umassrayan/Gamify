@@ -19,9 +19,14 @@ import AssignmentBoard from "./components/Assignment";
 
 import ProgressBar from "./components/ProgressBar";
 import Account from "./components/Account";
+
 // import AccountSettings from "./components/AccountSettings";
 import WeeklyAgenda from "./components/WeeklyAgenda";
 import ToDo from "./components/ToDo";
+
+import AccountSettings from "./components/AccountSettings";
+// import Sidebar from "./components/Sidebar";
+
 
 // const App: React.FC = () => {
 //   return (
@@ -36,9 +41,6 @@ import ToDo from "./components/ToDo";
 //   <Calendar></Calendar>
 //   <AssignmentBoard></AssignmentBoard>
 // </div>
-
-// BACKEND/DATABASE TODO: implement the progression to be by attendance/until finals
-
 //   );
 // };
 
@@ -48,6 +50,7 @@ function Main() {
   // If the current URL starts with /todo/, we know a day-specific page is selected
   const isDayToDo = location.pathname.startsWith("/todo/");
 
+  // BACKEND/DATABASE TODO: line 57, implement the progression to be by attendance/until finals
   return (
     <div style={{ display: "flex" }}>
       <div>
@@ -84,6 +87,40 @@ function App() {
     </Router>
   );
 }
+
+
+    // BACKEND/DATABASE TODO: implement the progression to be by attendance/until finals
+//     <Router>
+//       <Routes>
+//         <Route
+//           path="/"
+//           element={
+//             <div style={{ display: "flex" }}>
+//               <div>
+//                 <ProgressBar progress={65} />
+//                 <Account />
+//               </div>
+//               <div
+//                 style={{
+//                   fontFamily: "sans-serif",
+//                   backgroundColor: "#fff",
+//                   minHeight: "100vh",
+//                   padding: "15px",
+//                   display: "grid",
+//                   gap: "10px",
+//                 }}
+//               >
+//                 <Calendar></Calendar>
+//                 <AssignmentBoard />
+//               </div>
+//             </div>
+//           }
+//         />
+//         <Route path="/AccountSettings" element={<AccountSettings />} />
+//       </Routes>
+//     </Router>
+//   );
+// };
 
 // const App: React.FC = () => {
 //   return (
