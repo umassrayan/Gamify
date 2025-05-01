@@ -1,5 +1,10 @@
+import React from "react";
+import Calendar from "./components/Calendar";
+import AssignmentBoard from "./components/Assignment";
+import ClassBoard from "./components/ClassBoard";
+import ProgressBar from "./components/ProgressBar";
+import Account from "./components/Account";
 import { useAuth } from "./context/AuthContext"; // Import the custom hook
-// import React from "react";
 // import { AnimatePresence, motion } from "framer-motion"; //
 // import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import {
@@ -8,43 +13,59 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
-
 // Import layouts
 import PublicAppLayout from "./components/LoginRegister";
 
 import "./App.css";
 import DashboardLayout1 from "./components/DashboardLayout1";
 
-const App: React.FC = () => {
-  const { currentUser } = useAuth(); // Get the current user from context
-  console.log("Current User in App.tsx:", currentUser);
-
+const DashboardLayout: React.FC = () => {
   return (
-    <Router>
-      {currentUser ? (
-        // If user exists (is logged in), show dashboard
-        <DashboardLayout1 /> // No need to pass logout manually if using context/firebase directly
-      ) : (
-        // If no user (logged out), show public layout
-        <PublicAppLayout /> // No need to pass login success callback
-      )}
-    </Router>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <div>
+        <ProgressBar progress={65} />
+        <Account />
+      </div>
+      <div
+        style={{
+          flex: 1,
+          fontFamily: "sans-serif",
+          backgroundColor: "#fff",
+          minHeight: "100vh",
+          padding: "15px",
+          display: "grid",
+          gap: "10px",
+        }}
+      >
+        <div style={{ height: "70%" }}>
+          <Calendar />
+        </div>
+        <div style={{ display: "flex", gap: "20px", height: "100vh" }}>
+          <div style={{ flex: 2, display: "flex", flexDirection: "column" }}>
+            <AssignmentBoard />
+          </div>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <ClassBoard />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
-// import Sidebar from "./components/Sidebar";
 
-import Calendar from "./components/Calendar";
-import AssignmentBoard from "./components/Assignment";
-import ClassBoard from "./components/ClassBoard";
-import ProgressBar from "./components/ProgressBar";
-import Account from "./components/Account";
+const App: React.FC = () => {
+  const { currentUser } = useAuth(); // Access currentUser from context
 
-// import AccountSettings from "./components/AccountSettings";
-import WeeklyAgenda from "./components/WeeklyAgenda";
-import ToDo from "./components/ToDo";
+  // If the user is logged in, show the Dashboard layout
+  if (currentUser) {
+    return <DashboardLayout />;
+  }
 
-import AccountSettings from "./components/AccountSettings";
-// import Sidebar from "./components/Sidebar";
+  // If no user (logged out), show public login/sign-up pages
+  return <PublicAppLayout />;
+};
+
+export default App;
 
 // const App: React.FC = () => {
 //   return (
@@ -165,5 +186,3 @@ import AccountSettings from "./components/AccountSettings";
 //     </Router>
 //   );
 // };
-
-export default App;

@@ -20,6 +20,14 @@ const AssignmentBoard: React.FC = () => {
   const [assignments, setAssignments] = useState<AssignmentType[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // New state for form visibility and new assignment data
+  const [showForm, setShowForm] = useState(false);
+  const [newAssignment, setNewAssignment] = useState({
+    className: "",
+    name: "",
+    day: "",
+  });
+
   useEffect(() => {
     async function fetchAssignments() {
       try {
@@ -67,6 +75,25 @@ const AssignmentBoard: React.FC = () => {
     setAssignments((prev) => prev.filter((a) => a.id !== id));
   };
 
+  // Adds a new assignment to the list if all fields are filled in
+  const handleAddAssignment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newAssignment.className && newAssignment.name && newAssignment.day) {
+      setAssignments((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(), // Convert to string for Firestore compatibility
+          title: newAssignment.name,
+          description: newAssignment.className,
+          dueDate: newAssignment.day,
+          completed: false,
+        },
+      ]);
+      setNewAssignment({ className: "", name: "", day: "" });
+      setShowForm(false);
+    }
+  };
+
   if (loading) return <div>Loading assignments...</div>;
 
   return (
@@ -76,9 +103,78 @@ const AssignmentBoard: React.FC = () => {
         borderRadius: "8px",
         padding: "10px",
         position: "relative",
-        height: "38vh",
+        height: "36vh",
       }}
     >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end", // Right-align the button
+          marginBottom: "10px",
+        }}
+      >
+        <button onClick={() => setShowForm(true)} style={addButtonStyle}>
+          +
+        </button>
+      </div>
+
+      {showForm && (
+        <div style={modalOverlayStyle}>
+          <div style={modalStyle}>
+            <h3 style={{ marginTop: 0 }}>Add Assignment</h3>
+            <form
+              onSubmit={handleAddAssignment}
+              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+            >
+              <input
+                type="text"
+                placeholder="Class"
+                value={newAssignment.className}
+                onChange={(e) =>
+                  setNewAssignment({
+                    ...newAssignment,
+                    className: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Assignment"
+                value={newAssignment.name}
+                onChange={(e) =>
+                  setNewAssignment({ ...newAssignment, name: e.target.value })
+                }
+              />
+              <input
+                type="date"
+                value={newAssignment.day}
+                onChange={(e) =>
+                  setNewAssignment({ ...newAssignment, day: e.target.value })
+                }
+              />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "10px",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  style={cancelButtonStyle}
+                >
+                  Cancel
+                </button>
+                <button type="submit" style={addButtonStyle}>
+                  Add
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <table
         style={{
           width: "100%",
@@ -99,35 +195,44 @@ const AssignmentBoard: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {assignments.map((assignment) => (
-            <tr
-              key={assignment.id}
-              style={{
-                backgroundColor: assignment.completed ? "#e6e2df" : "#faf8f6",
-                transition: "background-color 0.3s ease",
-              }}
-            >
-              <td style={tdStyle}>{assignment.title}</td>
-              <td style={tdStyle}>{assignment.description}</td>
-              <td style={tdStyle}>{assignment.dueDate}</td>
-              <td style={tdStyle}>
-                <input
-                  type="checkbox"
-                  checked={assignment.completed}
-                  onChange={() => handleToggleCompleted(assignment.id)}
-                />
-              </td>
-              <td style={tdStyle}>
-                <button
-                  onClick={() => handleDeleteAssignment(assignment.id)}
-                  style={trashButtonStyle}
-                  title="Delete Assignment"
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-              </td>
-            </tr>
-          ))}
+          {[...assignments]
+            .sort((a, b) => {
+              if (a.completed !== b.completed) {
+                return a.completed ? 1 : -1;
+              }
+              return (
+                new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+              );
+            })
+            .map((assignment) => (
+              <tr
+                key={assignment.id}
+                style={{
+                  backgroundColor: assignment.completed ? "#e6e2df" : "#faf8f6",
+                  transition: "background-color 0.3s ease",
+                }}
+              >
+                <td style={tdStyle}>{assignment.title}</td>
+                <td style={tdStyle}>{assignment.description}</td>
+                <td style={tdStyle}>{assignment.dueDate}</td>
+                <td style={tdStyle}>
+                  <input
+                    type="checkbox"
+                    checked={assignment.completed}
+                    onChange={() => handleToggleCompleted(assignment.id)}
+                  />
+                </td>
+                <td style={tdStyle}>
+                  <button
+                    onClick={() => handleDeleteAssignment(assignment.id)}
+                    style={trashButtonStyle}
+                    title="Delete Assignment"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </td>
+              </tr>
+            ))}
         </tbody>
       </table>
     </div>

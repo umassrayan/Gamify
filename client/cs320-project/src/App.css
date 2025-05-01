@@ -1,9 +1,21 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Global layout reset */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
+
+body {
+  font-family: sans-serif;
+}
+
+/* Updated root styling */
+#root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
 
 .logo {
   height: 6em;
@@ -11,9 +23,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
