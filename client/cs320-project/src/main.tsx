@@ -1,10 +1,16 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import 'bootstrap/dist/css/bootstrap.css'
-import App from './App.tsx'
+// src/main.tsx (or index.tsx)
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import { AuthProvider } from './context/AuthContext'; // Import the provider
+import 'bootstrap/dist/css/bootstrap.css';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+        <AuthProvider>
+            {' '}
+            {/* Wrap App with the AuthProvider */}
+            <App />
+        </AuthProvider>
+    </React.StrictMode>,
+);
