@@ -1,7 +1,26 @@
+import { useEffect, useState } from "react";
+import { getUserProfile } from "../api/firestore";
 import { useNavigate } from "react-router-dom";
+
+const userId = "hqbb3FUjX6LLjMKAnqb2"; // Hardcoded for now
 
 function Account() {
   const navigate = useNavigate();
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const data = await getUserProfile(userId);
+        setProfile(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchProfile();
+  }, []);
+
+  if (!profile) return <div>Loading...</div>;
 
   return (
     <button
@@ -20,9 +39,10 @@ function Account() {
         marginTop: "-20px",
       }}
     >
-      B
+      {profile.name ? profile.name.charAt(0).toUpperCase() : "?"}
     </button>
   );
 }
 
 export default Account;
+
