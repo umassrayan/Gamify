@@ -14,10 +14,10 @@ function Account() {
         backgroundColor: "#6D5A4F",
         color: "white",
         textAlign: "center",
-        margin: "50px",
+        margin: "35px",
+        marginTop: "-10px",
         cursor: "pointer",
         fontSize: "40px",
-        marginTop: "-20px",
       }}
     >
       B
