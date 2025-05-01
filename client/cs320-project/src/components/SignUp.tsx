@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Imports needed for the "current" functionality's Firebase logics
+// Imports needed for the "current" functionality's Firebase logic
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db, doc, setDoc } from '../firebase'; // Using imports from "current" version
 import { FirebaseError } from 'firebase/app'; // Using import from "current" version
