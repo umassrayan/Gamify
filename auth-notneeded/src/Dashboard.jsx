@@ -1,5 +1,5 @@
 import { signOut } from 'firebase/auth';
-import { auth } from './firebase';
+import { auth } from '../../client/cs320-project/src/firebase';
 import { useAuth } from './AuthProvider';
 
 export default function Dashboard() {

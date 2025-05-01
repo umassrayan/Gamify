@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth, db, doc, setDoc } from './firebase';
+import { auth, db, doc, setDoc } from '../../client/cs320-project/src/firebase';
 
 const AuthCtx = createContext(null);
 export const useAuth = () => useContext(AuthCtx);

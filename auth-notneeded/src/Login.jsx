@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from './firebase';
+import { auth, googleProvider } from '../../client/cs320-project/src/firebase';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
