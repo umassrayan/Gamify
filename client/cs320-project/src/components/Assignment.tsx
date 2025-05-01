@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
-// Type definition for a single assignment
+// Defines the structure of an assignment
 export interface AssignmentType {
   id: number;
   className: string;
@@ -11,8 +11,8 @@ export interface AssignmentType {
   completed: boolean;
 }
 
-// AssignmentBoard Component
 const AssignmentBoard: React.FC = () => {
+  // Initializes the state with a list of example assignments
   const [assignments, setAssignments] = useState<AssignmentType[]>([
     {
       id: 1,
@@ -51,33 +51,130 @@ const AssignmentBoard: React.FC = () => {
     },
   ]);
 
-  // Toggle the "completed" status of an assignment
+  // Manages the visibility of the "New Assignment" form
+  const [showForm, setShowForm] = useState(false);
+  // Stores the data inputted in the "New Assignment" form
+  const [newAssignment, setNewAssignment] = useState({
+    className: "",
+    name: "",
+    day: "",
+  });
+
+  // Toggles the 'completed' status of a specific assignment by ID
   const handleToggleCompleted = (id: number) => {
     setAssignments((prev) =>
       prev.map((a) => (a.id === id ? { ...a, completed: !a.completed } : a))
     );
   };
 
-  // Delete an assignment by ID
+  // Deletes an assignment from the list by its ID
   const handleDeleteAssignment = (id: number) => {
     setAssignments((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  // Adds a new assignment to the list if all fields are filled in
+  const handleAddAssignment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newAssignment.className && newAssignment.name && newAssignment.day) {
+      setAssignments((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          ...newAssignment,
+          completed: false,
+        },
+      ]);
+      setNewAssignment({ className: "", name: "", day: "" });
+      setShowForm(false);
+    }
   };
 
   return (
     <div
       style={{
         backgroundColor: "#f4f1ee",
-        // padding: "20px",
         borderRadius: "8px",
+        padding: "10px",
+        position: "relative",
+        height: "38vh",
       }}
     >
-      {/* <h2 style={{ color: "#5a4c42" }}>Assignments</h2> */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "10px",
+        }}
+      >
+        {/* <div style={{ fontWeight: "bold", color: "#3c2f2f", fontSize: "18px" }}>
+          Assignments
+        </div> */}
+      </div>
+
+      {showForm && (
+        <div style={modalOverlayStyle}>
+          <div style={modalStyle}>
+            <h3 style={{ marginTop: 0 }}>Add Assignment</h3>
+            <form
+              onSubmit={handleAddAssignment}
+              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+            >
+              <input
+                type="text"
+                placeholder="Class"
+                value={newAssignment.className}
+                onChange={(e) =>
+                  setNewAssignment({
+                    ...newAssignment,
+                    className: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Assignment"
+                value={newAssignment.name}
+                onChange={(e) =>
+                  setNewAssignment({ ...newAssignment, name: e.target.value })
+                }
+              />
+              <input
+                type="date"
+                value={newAssignment.day}
+                onChange={(e) =>
+                  setNewAssignment({ ...newAssignment, day: e.target.value })
+                }
+              />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "10px",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  style={cancelButtonStyle}
+                >
+                  Cancel
+                </button>
+                <button type="submit" style={addButtonStyle}>
+                  Add
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Table */}
       <table
         style={{
           width: "100%",
           borderCollapse: "collapse",
           backgroundColor: "#fff",
-          border: "none", // removed outer border
+          border: "none",
           borderRadius: "4px",
           overflow: "hidden",
         }}
@@ -85,41 +182,63 @@ const AssignmentBoard: React.FC = () => {
         <thead style={{ backgroundColor: "#d6cfc7" }}>
           <tr>
             <th style={thStyle}>Class</th>
-            <th style={thStyle}>Name</th>
+            <th style={thStyle}>Assignment</th>
             <th style={thStyle}>Day</th>
             <th style={thStyle}>Completed</th>
-            <th style={thStyle}> </th>
+            <th style={{ ...thStyle, textAlign: "right", minWidth: "80px" }}>
+              <button
+                onClick={() => setShowForm(true)}
+                style={{
+                  backgroundColor: "#8b5e3c",
+                  color: "white",
+                  border: "none",
+                  padding: "6px 10px",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                }}
+              >
+                +
+              </button>
+            </th>
           </tr>
         </thead>
         <tbody>
-          {assignments.map((assignment) => (
-            <tr
-              key={assignment.id}
-              style={{
-                backgroundColor: assignment.completed ? "#e6e2df" : "#faf8f6",
-              }}
-            >
-              <td style={tdStyle}>{assignment.className}</td>
-              <td style={tdStyle}>{assignment.name}</td>
-              <td style={tdStyle}>{assignment.day}</td>
-              <td style={tdStyle}>
-                <input
-                  type="checkbox"
-                  checked={assignment.completed}
-                  onChange={() => handleToggleCompleted(assignment.id)}
-                />
-              </td>
-              <td style={tdStyle}>
-                <button
-                  onClick={() => handleDeleteAssignment(assignment.id)}
-                  style={trashButtonStyle}
-                  title="Delete Assignment"
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-              </td>
-            </tr>
-          ))}
+          {[...assignments]
+            .sort((a, b) => {
+              if (a.completed !== b.completed) {
+                return a.completed ? 1 : -1;
+              }
+              return new Date(a.day).getTime() - new Date(b.day).getTime();
+            })
+            .map((assignment) => (
+              <tr
+                key={assignment.id}
+                style={{
+                  backgroundColor: assignment.completed ? "#e6e2df" : "#faf8f6",
+                }}
+              >
+                <td style={tdStyle}>{assignment.className}</td>
+                <td style={tdStyle}>{assignment.name}</td>
+                <td style={tdStyle}>{assignment.day}</td>
+                <td style={tdStyle}>
+                  <input
+                    type="checkbox"
+                    checked={assignment.completed}
+                    onChange={() => handleToggleCompleted(assignment.id)}
+                  />
+                </td>
+                <td style={tdStyle}>
+                  <button
+                    onClick={() => handleDeleteAssignment(assignment.id)}
+                    style={trashButtonStyle}
+                    title="Delete Assignment"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </td>
+              </tr>
+            ))}
         </tbody>
       </table>
     </div>
@@ -149,6 +268,45 @@ const trashButtonStyle: React.CSSProperties = {
   color: "#8b5e3c",
   cursor: "pointer",
   fontSize: "16px",
+};
+
+// Modal styles
+const modalOverlayStyle: React.CSSProperties = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  backgroundColor: "rgba(0, 0, 0, 0.5)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 1000,
+};
+
+const modalStyle: React.CSSProperties = {
+  backgroundColor: "white",
+  padding: "20px",
+  borderRadius: "8px",
+  minWidth: "300px",
+  boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+};
+
+const cancelButtonStyle: React.CSSProperties = {
+  backgroundColor: "#ccc",
+  border: "none",
+  padding: "6px 12px",
+  borderRadius: "4px",
+  cursor: "pointer",
+};
+
+const addButtonStyle: React.CSSProperties = {
+  backgroundColor: "#5a4c42",
+  color: "white",
+  border: "none",
+  padding: "6px 12px",
+  borderRadius: "4px",
+  cursor: "pointer",
 };
 
 export default AssignmentBoard;

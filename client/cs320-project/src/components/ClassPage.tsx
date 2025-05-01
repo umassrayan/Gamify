@@ -1,11 +1,17 @@
 import React from "react";
-import Calendar from "./components/Calendar";
-import AssignmentBoard from "./components/Assignment";
-import ClassBoard from "./components/ClassBoard";
-import ProgressBar from "./components/ProgressBar";
-import Account from "./components/Account";
+import { useParams } from "react-router-dom";
+import ClassBoard from "./ClassBoard";
+import ProgressBar from "./ProgressBar";
+import Account from "./Account";
+import Calendar from "./Calendar";
 
-const App: React.FC = () => {
+const ClassPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+
+  if (!id) {
+    return <div>Error: Class not found!</div>;
+  }
+
   return (
     <div style={{ display: "flex" }}>
       <div>
@@ -23,13 +29,11 @@ const App: React.FC = () => {
           gap: "10px",
         }}
       >
-        <div style={{ height: "70%" }}>
-          <Calendar />
-        </div>
+        <Calendar />
         <div style={{ display: "flex", gap: "20px", height: "100vh" }}>
-          <div style={{ flex: 2, display: "flex", flexDirection: "column" }}>
-            <AssignmentBoard />
-          </div>
+          <div
+            style={{ flex: 2, display: "flex", flexDirection: "column" }}
+          ></div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <ClassBoard />
           </div>
@@ -39,4 +43,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default ClassPage;
