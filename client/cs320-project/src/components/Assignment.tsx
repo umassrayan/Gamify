@@ -1,94 +1,94 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { getUserAssignments, updateAssignmentCompletedStatus } from "../api/firestore"; // Import Firestore functions
 
 // Type definition for a single assignment
 export interface AssignmentType {
-  id: number;
-  className: string;
-  name: string;
-  day: string;
+  id: string; // Firestore document ID is a string
+  title: string;
+  description: string;
+  dueDate: string; // Formatted date string
   completed: boolean;
 }
 
 // AssignmentBoard Component
 const AssignmentBoard: React.FC = () => {
-  const [assignments, setAssignments] = useState<AssignmentType[]>([
-    {
-      id: 1,
-      className: "CSC230",
-      name: "Programming Assignment",
-      day: "2025-04-20",
-      completed: false,
-    },
-    {
-      id: 2,
-      className: "MTH101",
-      name: "Calculus Homework",
-      day: "2025-04-21",
-      completed: true,
-    },
-    {
-      id: 3,
-      className: "ENG150",
-      name: "Read Chapter 3",
-      day: "2025-04-22",
-      completed: false,
-    },
-    {
-      id: 4,
-      className: "BIO110",
-      name: "Lab Report",
-      day: "2025-04-23",
-      completed: false,
-    },
-    {
-      id: 5,
-      className: "HIS200",
-      name: "Essay Draft",
-      day: "2025-04-24",
-      completed: true,
-    },
-  ]);
+  const userId = "hqbb3FUjX6LLjMKAnqb2"; // Hardcoded for now
+  const [assignments, setAssignments] = useState<AssignmentType[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Toggle the "completed" status of an assignment
-  const handleToggleCompleted = (id: number) => {
-    setAssignments((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, completed: !a.completed } : a))
-    );
+  useEffect(() => {
+    async function fetchAssignments() {
+      try {
+        const data = await getUserAssignments(userId);
+        const formattedAssignments = data.map((assignment: any) => ({
+          id: assignment.id,
+          title: assignment.title,
+          description: assignment.description,
+          dueDate: assignment.dueDate.toDate().toISOString().split("T")[0], // Format Firestore Timestamp
+          completed: assignment.completed,
+        }));
+        setAssignments(formattedAssignments);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+      }
+    }
+    fetchAssignments();
+  }, []);
+
+  // Toggle the "completed" status of an assignment and sync to Firestore
+  const handleToggleCompleted = async (id: string) => {
+    try {
+      const assignment = assignments.find((a) => a.id === id);
+      if (!assignment) return;
+
+      const newCompletedStatus = !assignment.completed;
+
+      // Update frontend immediately
+      setAssignments((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, completed: newCompletedStatus } : a))
+      );
+
+      // Update Firestore
+      await updateAssignmentCompletedStatus(userId, id, newCompletedStatus);
+    } catch (error) {
+      console.error("Failed to update assignment in Firestore:", error);
+    }
   };
 
-  // Delete an assignment by ID
-  const handleDeleteAssignment = (id: number) => {
+  // Delete an assignment locally (does not delete in Firestore yet)
+  const handleDeleteAssignment = (id: string) => {
     setAssignments((prev) => prev.filter((a) => a.id !== id));
   };
+
+  if (loading) return <div>Loading assignments...</div>;
 
   return (
     <div
       style={{
         backgroundColor: "#f4f1ee",
-        // padding: "20px",
         borderRadius: "8px",
       }}
     >
-      {/* <h2 style={{ color: "#5a4c42" }}>Assignments</h2> */}
       <table
         style={{
           width: "100%",
           borderCollapse: "collapse",
           backgroundColor: "#fff",
-          border: "none", // removed outer border
+          border: "none",
           borderRadius: "4px",
           overflow: "hidden",
         }}
       >
         <thead style={{ backgroundColor: "#d6cfc7" }}>
           <tr>
-            <th style={thStyle}>Class</th>
-            <th style={thStyle}>Name</th>
-            <th style={thStyle}>Day</th>
+            <th style={thStyle}>Title</th>
+            <th style={thStyle}>Description</th>
+            <th style={thStyle}>Due Date</th>
             <th style={thStyle}>Completed</th>
-            <th style={thStyle}> </th>
+            <th style={thStyle}></th>
           </tr>
         </thead>
         <tbody>
@@ -97,11 +97,12 @@ const AssignmentBoard: React.FC = () => {
               key={assignment.id}
               style={{
                 backgroundColor: assignment.completed ? "#e6e2df" : "#faf8f6",
+                transition: "background-color 0.3s ease",
               }}
             >
-              <td style={tdStyle}>{assignment.className}</td>
-              <td style={tdStyle}>{assignment.name}</td>
-              <td style={tdStyle}>{assignment.day}</td>
+              <td style={tdStyle}>{assignment.title}</td>
+              <td style={tdStyle}>{assignment.description}</td>
+              <td style={tdStyle}>{assignment.dueDate}</td>
               <td style={tdStyle}>
                 <input
                   type="checkbox"
@@ -152,3 +153,4 @@ const trashButtonStyle: React.CSSProperties = {
 };
 
 export default AssignmentBoard;
+
