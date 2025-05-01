@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db, doc, setDoc } from '../firebase'; // Using imports from "current" version
 import { FirebaseError } from 'firebase/app'; // Using import from "current" version
+import { serverTimestamp, collection } from 'firebase/firestore';
 
 // Using state structure from "previous" version to match JSX
 const SignUp: React.FC = () => {
@@ -51,12 +52,35 @@ const SignUp: React.FC = () => {
             try {
                 const userDocRef = doc(db, 'users', user.uid);
                 await setDoc(userDocRef, {
-                    uid: user.uid,
-                    email: user.email, // Use email state
-                    firstName: firstName, // Use firstName state
-                    lastName: lastName, // Use lastName state
-                    displayName: `${firstName} ${lastName}`, // Construct displayName
-                    createdAt: new Date(),
+                    name: `${firstName} ${lastName}`,
+                    email: user.email,
+                    currentStreak: 0,
+                    lastAttendanceDateTime: serverTimestamp(), // You could also use serverTimestamp() if imported
+                    streakRestoreCount: 0,
+                    totalPoints: 0,
+                    settings: {
+                        notificationsEnabled: true,
+                        theme: 'light', // or 'dark' depending on your default
+                    },
+                });
+                // 2. Create example assignment
+                const assignmentsRef = collection(userDocRef, 'assignments');
+                await setDoc(doc(assignmentsRef), {
+                calendarEventId: 'event001',
+                completed: false,
+                description: 'Welcome assignment to get started!',
+                dueDate: serverTimestamp(), // or use new Date()
+                title: 'Intro Task',
+                });
+
+                // 3. Create example calendar event
+                const calendarRef = collection(userDocRef, 'calendarEvents');
+                await setDoc(doc(calendarRef), {
+                colorTag: 'default',
+                startTime: serverTimestamp(),
+                endTime: serverTimestamp(), // same here — replace with actual start/end if needed
+                title: 'Welcome Session',
+                type: 'custom',
                 });
                 console.log('User data saved to Firestore');
             } catch (firestoreError) {
