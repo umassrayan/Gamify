@@ -2,12 +2,7 @@ import { useAuth } from './context/AuthContext'; // Import the custom hook
 // import React from "react";
 // import { AnimatePresence, motion } from "framer-motion"; //
 // import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter as Router } from 'react-router-dom';
 
 // Import layouts
 import PublicAppLayout from './components/LoginRegister';
@@ -33,19 +28,18 @@ const App: React.FC = () => {
 };
 // import Sidebar from "./components/Sidebar";
 
-import Calendar from "./components/Calendar";
-import AssignmentBoard from "./components/Assignment";
+// import Calendar from "./components/Calendar";
+// import AssignmentBoard from "./components/Assignment";
 
-import ProgressBar from "./components/ProgressBar";
-import Account from "./components/Account";
+// import ProgressBar from "./components/ProgressBar";
+// import Account from "./components/Account";
 
 // import AccountSettings from "./components/AccountSettings";
-import WeeklyAgenda from "./components/WeeklyAgenda";
-import ToDo from "./components/ToDo";
+// import WeeklyAgenda from "./components/WeeklyAgenda";
+// import ToDo from "./components/ToDo";
 
-import AccountSettings from "./components/AccountSettings";
+// import AccountSettings from "./components/AccountSettings";
 // import Sidebar from "./components/Sidebar";
-
 
 // const App: React.FC = () => {
 //   return (
@@ -107,8 +101,7 @@ import AccountSettings from "./components/AccountSettings";
 //   );
 // }
 
-
-    // BACKEND/DATABASE TODO: implement the progression to be by attendance/until finals
+// BACKEND/DATABASE TODO: implement the progression to be by attendance/until finals
 //     <Router>
 //       <Routes>
 //         <Route
