@@ -1,89 +1,29 @@
+// src/App.tsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { useAuth } from './context/AuthContext'; // Import the custom hook
 
-import WelcomePage from './components/WelcomePage';
-import SignIn from './components/SignIn';
-import SignUp from './components/SignUp';
+// Import layouts
+import PublicAppLayout from './components/LoginRegister';
 
-// import Calendar from './components/Calendar';
-// import AssignmentBoard from './components/Assignment';
-
-// import ProgressBar from './components/ProgressBar';
-// import Account from './components/Account';
-// import AccountSettings from './components/AccountSettings';
-// import Sidebar from "./components/Sidebar";
+import './App.css';
+import DashboardLayout1 from './components/DashboardLayout1';
 
 const App: React.FC = () => {
-    return (
-        <div>
-            <Router>
-                <Routes>
-                    <Route path="/" element={<WelcomePage />} />
-                    <Route path="/signin" element={<SignIn />} />
-                    <Route path="/signup" element={<SignUp />} />
-                </Routes>
-            </Router>
-            {/* <Calendar></Calendar>
-            <AssignmentBoard></AssignmentBoard> */}
-        </div>
+    const { currentUser } = useAuth(); // Get the current user from context
+    console.log('Current User in App.tsx:', currentUser);
 
-        // BACKEND/DATABASE TODO: implement the progression to be by attendance/until finals
-        // <Router>
-        //     <Routes>
-        //         <Route
-        //             path="/"
-        //             element={
-        //                 <div style={{ display: 'flex' }}>
-        //                     <div>
-        //                         <ProgressBar progress={65} />
-        //                         <Account />
-        //                     </div>
-        //                     <div
-        //                         style={{
-        //                             fontFamily: 'sans-serif',
-        //                             backgroundColor: '#fff',
-        //                             minHeight: '100vh',
-        //                             padding: '15px',
-        //                             display: 'grid',
-        //                             gap: '10px',
-        //                         }}
-        //                     >
-        //                         <Calendar></Calendar>
-        //                         <AssignmentBoard />
-        //                     </div>
-        //                 </div>
-        //             }
-        //         />
-        //         <Route path="/AccountSettings" element={<AccountSettings />} />
-        //     </Routes>
-        // </Router>
+    return (
+        <Router>
+            {currentUser ? (
+                // If user exists (is logged in), show dashboard
+                <DashboardLayout1 /> // No need to pass logout manually if using context/firebase directly
+            ) : (
+                // If no user (logged out), show public layout
+                <PublicAppLayout /> // No need to pass login success callback
+            )}
+        </Router>
     );
 };
-// const App: React.FC = () => {
-//   return (
-//     <Router>
-//       <div style={{ display: "flex" }}>
-//         <Sidebar />
-//         <div
-//           style={{
-//             flex: 1,
-//             fontFamily: "sans-serif",
-//             backgroundColor: "#ece8e4",
-//             minHeight: "100vh",
-//             padding: "40px",
-//           }}
-//         >
-//           <Routes>
-//             <Route path="/" element={<WelcomePage />} />
-//             <Route path="/signin" element={<SignIn />} />
-//             <Route path="/signup" element={<SignUp />} />
-//             <Route path="/calendar" element={<Calendar />} />
-//             <Route path="/assignments" element={<AssignmentBoard />} />
-//           </Routes>
-//         </div>
-//       </div>
-//     </Router>
-//   );
-// };
 
 export default App;
