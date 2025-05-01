@@ -16,6 +16,7 @@ function Calendar() {
   const [inputName, setInputName] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [date, setDate] = useState("");
 
   useEffect(() => {
     fetchEvents();
@@ -28,18 +29,17 @@ function Calendar() {
         .fill(0)
         .map(() => []);
 
-  
       data.forEach((event: any) => {
         const start = event.startTime.toDate();
         const end = event.endTime.toDate();
         const dayIndex = start.getDay();
-  
+
         mappedEvents[dayIndex] = [
           ...mappedEvents[dayIndex],
           `${formatTime(start)} – ${formatTime(end)}: ${event.title}`,
         ];
       });
-  
+
       setEvents(mappedEvents);
     } catch (error) {
       console.error("Error fetching calendar events:", error);
@@ -49,7 +49,6 @@ function Calendar() {
   const handleAddEvent = async () => {
     if (inputName && currentDayIndex !== null && startTime && endTime) {
       try {
-        // Step 1: Create full Date objects
         const today = new Date();
         const selectedDate = new Date(today.getFullYear(), today.getMonth(), dates[currentDayIndex]);
         const startDateTime = new Date(selectedDate);
@@ -61,17 +60,14 @@ function Calendar() {
         startDateTime.setHours(startHour, startMinute);
         endDateTime.setHours(endHour, endMinute);
 
-        // Step 2: Save event into Firestore
         await addUserCalendarEvent(userId, {
           title: inputName,
           startTime: startDateTime,
           endTime: endDateTime,
         });
 
-        // Step 3: Reload events from Firestore
         await fetchEvents();
 
-        // Step 4: Clear the modal
         setInputName("");
         setStartTime("");
         setEndTime("");
@@ -87,10 +83,11 @@ function Calendar() {
       <div
         style={{
           backgroundColor: "#E9E8E0",
+          height: "60vh",
           display: "grid",
           gridTemplateColumns: "repeat(7, 2fr)",
           gap: ".25rem",
-          padding: ".75rem",
+          padding: "1rem",
           borderRadius: "25px",
         }}
       >
@@ -136,8 +133,8 @@ function Calendar() {
                 cursor: "pointer",
               }}
               onClick={() => {
-                setCurrentDayIndex(i);
                 setModalOpen(true);
+                setCurrentDayIndex(i);
               }}
             ></button>
           </div>
@@ -184,53 +181,33 @@ function Calendar() {
               placeholder="Event Name"
               value={inputName}
               onChange={(e) => setInputName(e.target.value)}
-              style={{
-                padding: "1rem",
-                fontSize: "1rem",
-                borderRadius: "10px",
-                backgroundColor: "white",
-              }}
+              style={styles.input}
             />
+
             <div style={{ display: "flex", gap: "0.5rem" }}>
-              <h1
-                style={{
-                  fontSize: "1rem",
-                  color: "white",
-                  marginTop: "10px",
-                }}
-              >
-                Time
-              </h1>
+              <h1 style={styles.inputText}>Date</h1>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <h1 style={styles.inputText}>Time</h1>
               <input
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                style={{
-                  padding: "0.5rem",
-                  fontSize: "1rem",
-                  borderRadius: "10px",
-                  backgroundColor: "white",
-                }}
+                style={styles.input}
               />
-              <h1
-                style={{
-                  fontSize: "1rem",
-                  color: "white",
-                  marginTop: "14px",
-                }}
-              >
-                -
-              </h1>
+              <h1 style={styles.inputText}>-</h1>
               <input
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                style={{
-                  padding: "0.5rem",
-                  fontSize: "1rem",
-                  borderRadius: "10px",
-                  backgroundColor: "white",
-                }}
+                style={styles.input}
               />
             </div>
             <div
@@ -256,7 +233,6 @@ function Calendar() {
                 style={{
                   padding: "0.5rem 1rem",
                   backgroundColor: "#BEB5AA",
-                  color: "#4B382D",
                   border: "none",
                   borderRadius: "5px",
                 }}
@@ -276,5 +252,19 @@ function formatTime(date: Date) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-export default Calendar;
+const styles: { [key: string]: React.CSSProperties } = {
+  input: {
+    padding: "0.5rem",
+    fontSize: "1rem",
+    borderRadius: "10px",
+    backgroundColor: "white",
+    border: "none",
+  },
+  inputText: {
+    fontSize: "1rem",
+    color: "white",
+    marginTop: "12px",
+  },
+};
 
+export default Calendar;
