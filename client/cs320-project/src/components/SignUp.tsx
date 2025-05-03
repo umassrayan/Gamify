@@ -51,12 +51,16 @@ const SignUp: React.FC = () => {
             try {
                 const userDocRef = doc(db, 'users', user.uid);
                 await setDoc(userDocRef, {
-                    uid: user.uid,
-                    email: user.email, // Use email state
-                    firstName: firstName, // Use firstName state
-                    lastName: lastName, // Use lastName state
-                    displayName: `${firstName} ${lastName}`, // Construct displayName
-                    createdAt: new Date(),
+                    email: user.email,
+                    name: `${firstName} ${lastName}`,
+                    currentStreak: 0,
+                    totalPoints: 0,
+                    lastAttendanceDateTime: new Date(),
+                    streakRestoreCount: 0,
+                    settings: {
+                        theme: 'dark',
+                        notificationsEnabled: true
+                    }
                 });
                 console.log('User data saved to Firestore');
             } catch (firestoreError) {
