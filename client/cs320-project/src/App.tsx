@@ -7,12 +7,9 @@ import Account from "./components/Account";
 import { useAuth } from "./context/AuthContext"; // Import the custom hook
 // import { AnimatePresence, motion } from "framer-motion"; //
 // import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+
+import { BrowserRouter as Router } from 'react-router-dom';
+
 // Import layouts
 import PublicAppLayout from "./components/LoginRegister";
 
@@ -52,6 +49,22 @@ const DashboardLayout: React.FC = () => {
     </div>
   );
 };
+
+// import Sidebar from "./components/Sidebar";
+
+// import Calendar from "./components/Calendar";
+// import AssignmentBoard from "./components/Assignment";
+
+// import ProgressBar from "./components/ProgressBar";
+// import Account from "./components/Account";
+
+// import AccountSettings from "./components/AccountSettings";
+// import WeeklyAgenda from "./components/WeeklyAgenda";
+// import ToDo from "./components/ToDo";
+
+// import AccountSettings from "./components/AccountSettings";
+// import Sidebar from "./components/Sidebar";
+
 
 const App: React.FC = () => {
   const { currentUser } = useAuth(); // Access currentUser from context
