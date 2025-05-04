@@ -1,81 +1,43 @@
-import React from "react";
-import Calendar from "./components/Calendar";
-import AssignmentBoard from "./components/Assignment";
-import ClassBoard from "./components/ClassBoard";
-import ProgressBar from "./components/ProgressBar";
-import Account from "./components/Account";
-import { useAuth } from "./context/AuthContext"; // Import the custom hook
-// import { AnimatePresence, motion } from "framer-motion"; //
-// import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-import { BrowserRouter as Router } from 'react-router-dom';
-
-// Import layouts
-import PublicAppLayout from "./components/LoginRegister";
-
-import "./App.css";
-import DashboardLayout1 from "./components/DashboardLayout1";
-
-const DashboardLayout: React.FC = () => {
-  return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <div>
-        <ProgressBar progress={65} />
-        <Account />
-      </div>
-      <div
-        style={{
-          flex: 1,
-          fontFamily: "sans-serif",
-          backgroundColor: "#fff",
-          minHeight: "100vh",
-          padding: "15px",
-          display: "grid",
-          gap: "10px",
-        }}
-      >
-        <div style={{ height: "70%" }}>
-          <Calendar />
-        </div>
-        <div style={{ display: "flex", gap: "20px", height: "100vh" }}>
-          <div style={{ flex: 2, display: "flex", flexDirection: "column" }}>
-            <AssignmentBoard />
-          </div>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            <ClassBoard />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// import Sidebar from "./components/Sidebar";
-
+import React from 'react';
 // import Calendar from "./components/Calendar";
 // import AssignmentBoard from "./components/Assignment";
-
+// import ClassBoard from "./components/ClassBoard";
 // import ProgressBar from "./components/ProgressBar";
 // import Account from "./components/Account";
+import { useAuth } from './context/AuthContext'; // Import the custom hook
+// import { AnimatePresence, motion } from "framer-motion"; //
+// import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+// import {
+//   BrowserRouter as Router,
+//   Routes,
+//   Route,
+//   useLocation,
+// } from "react-router-dom";
+// Import layouts
+import PublicAppLayout from './components/LoginRegister';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // <-- Need these imports
 
-// import AccountSettings from "./components/AccountSettings";
-// import WeeklyAgenda from "./components/WeeklyAgenda";
-// import ToDo from "./components/ToDo";
-
-// import AccountSettings from "./components/AccountSettings";
-// import Sidebar from "./components/Sidebar";
-
+import './App.css';
+import DashboardLayout1 from './components/DashboardLayout1';
 
 const App: React.FC = () => {
-  const { currentUser } = useAuth(); // Access currentUser from context
+    const { currentUser } = useAuth();
+    console.log('Current User in App.tsx:', currentUser);
 
-  // If the user is logged in, show the Dashboard layout
-  if (currentUser) {
-    return <DashboardLayout />;
-  }
-
-  // If no user (logged out), show public login/sign-up pages
-  return <PublicAppLayout />;
+    return (
+        // 1. Need the top-level Router here
+        <Router>
+            {/* 2. Need Routes to define routing rules */}
+            <Routes>
+                {currentUser ? (
+                    // 3. Use Route with /* for layouts containing nested Routes
+                    <Route path="/*" element={<DashboardLayout1 />} />
+                ) : (
+                    <Route path="/*" element={<PublicAppLayout />} />
+                )}
+            </Routes>
+        </Router>
+    );
 };
 
 export default App;
