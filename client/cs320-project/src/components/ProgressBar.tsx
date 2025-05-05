@@ -15,7 +15,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => (
     </div>
     <div
       style={{
-        height: "70vh",
+        height: "75vh",
         width: "35px",
         backgroundColor: "#e0e0e0",
         borderRadius: "20px",

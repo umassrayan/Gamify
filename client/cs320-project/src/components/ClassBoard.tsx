@@ -38,7 +38,7 @@ const ClassBoard: React.FC = () => {
         padding: "20px",
         backgroundColor: "#f4f1ee",
         borderRadius: "8px",
-        height: "36%",
+        height: "30vh",
       }}
     >
       {classList.map((classItem) => (

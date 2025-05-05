@@ -50,7 +50,11 @@ function Calendar() {
     if (inputName && currentDayIndex !== null && startTime && endTime) {
       try {
         const today = new Date();
-        const selectedDate = new Date(today.getFullYear(), today.getMonth(), dates[currentDayIndex]);
+        const selectedDate = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          dates[currentDayIndex]
+        );
         const startDateTime = new Date(selectedDate);
         const endDateTime = new Date(selectedDate);
 
@@ -83,7 +87,7 @@ function Calendar() {
       <div
         style={{
           backgroundColor: "#E9E8E0",
-          height: "60vh",
+          height: "55vh",
           display: "grid",
           gridTemplateColumns: "repeat(7, 2fr)",
           gap: ".25rem",
@@ -99,8 +103,8 @@ function Calendar() {
               padding: ".5rem",
               textAlign: "center",
               borderRadius: "25px",
-              minHeight: "45vh",
-              minWidth: "14vh",
+              height: "53vh",
+              width: "12.25vh",
               display: "flex",
               flexDirection: "column",
               fontSize: "1.5rem",
@@ -127,7 +131,7 @@ function Calendar() {
                 padding: "0.5rem 0.5rem",
                 fontSize: "1rem",
                 borderRadius: "8px",
-                minHeight: "45vh",
+                height: "55vh",
                 border: "none",
                 backgroundColor: "white",
                 cursor: "pointer",

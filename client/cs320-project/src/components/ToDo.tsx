@@ -1,9 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
-const ToDo: React.FC = () => {
-  const { day } = useParams<{ day: string }>(); // grab day name from URL
+type ToDoProps = {
+  day: string | undefined;
+};
+
+const ToDo: React.FC<ToDoProps> = ({ day }) => {
+  // const { day } = useParams<{ day: string }>(); // grab day name from URL
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<string[]>([]);
   const [newTask, setNewTask] = useState("");
@@ -27,8 +31,8 @@ const ToDo: React.FC = () => {
         display: "flex",
         flexDirection: "column",
         borderRadius: "25px",
-        width: "37vh",
-        height: "60vh",
+        width: "35vh",
+        height: "55vh",
         marginLeft: "15px",
         padding: "1rem",
       }}

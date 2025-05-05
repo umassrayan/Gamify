@@ -33,8 +33,8 @@ function Account() {
         backgroundColor: "#6D5A4F",
         color: "white",
         textAlign: "center",
-        margin: "35px",
-        marginTop: "-10px",
+        marginLeft: "35px",
+        marginTop: "-15px",
         cursor: "pointer",
         fontSize: "40px",
       }}
@@ -45,4 +45,3 @@ function Account() {
 }
 
 export default Account;
-

@@ -5,7 +5,7 @@ import { Routes, Route, Navigate } from "react-router-dom"; // Keep Routes, Rout
 import WelcomePage from "./WelcomePage";
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
-import App from "../App";
+// import App from "../App";
 
 // Remove props interface if onLoginSuccess is no longer needed due to context
 // interface PublicAppLayoutProps { ... }
