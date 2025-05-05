@@ -8,47 +8,13 @@ import { useAuth } from "./context/AuthContext"; // Import the custom hook
 // import { AnimatePresence, motion } from "framer-motion"; //
 // import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router } from "react-router-dom";
 
 // Import layouts
 import PublicAppLayout from "./components/LoginRegister";
 
 import "./App.css";
-import DashboardLayout1 from "./components/DashboardLayout1";
-
-const DashboardLayout: React.FC = () => {
-  return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <div>
-        <ProgressBar progress={65} />
-        <Account />
-      </div>
-      <div
-        style={{
-          flex: 1,
-          fontFamily: "sans-serif",
-          backgroundColor: "#fff",
-          minHeight: "100vh",
-          padding: "15px",
-          display: "grid",
-          gap: "10px",
-        }}
-      >
-        <div style={{ height: "70%" }}>
-          <Calendar />
-        </div>
-        <div style={{ display: "flex", gap: "20px", height: "100vh" }}>
-          <div style={{ flex: 2, display: "flex", flexDirection: "column" }}>
-            <AssignmentBoard />
-          </div>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            <ClassBoard />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import DashboardLayout from "./components/DashboardLayout1";
 
 // import Sidebar from "./components/Sidebar";
 
@@ -64,7 +30,6 @@ const DashboardLayout: React.FC = () => {
 
 // import AccountSettings from "./components/AccountSettings";
 // import Sidebar from "./components/Sidebar";
-
 
 const App: React.FC = () => {
   const { currentUser } = useAuth(); // Access currentUser from context
