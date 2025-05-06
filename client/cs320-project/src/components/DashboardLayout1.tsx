@@ -12,6 +12,7 @@ import ProgressBar from './ProgressBar';
 import Account from './Account';
 import AccountSettings from './AccountSettings';
 
+import OnboardingFlow from './Onboarding';
 const DashboardLayout1: React.FC = () => {
     // Example progress state (you'll likely manage this differently)
     const navigate = useNavigate(); // Hook for navigation after logout
@@ -86,6 +87,7 @@ const DashboardLayout1: React.FC = () => {
                 }
             />
             <Route path="/account-settings" element={<AccountSettings />} />
+            <Route path="/onboarding" element={<OnboardingFlow />} />
             {/* Add other dashboard-specific routes here */}
             {/* Example: Redirect unmatched dashboard routes */}
             {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
