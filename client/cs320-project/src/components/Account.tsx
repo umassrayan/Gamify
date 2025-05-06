@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { getUserProfile } from "../api/firestore";
-import { useNavigate } from "react-router-dom";
 
 const userId = "hqbb3FUjX6LLjMKAnqb2"; // Hardcoded for now
 
-function Account() {
-  const navigate = useNavigate();
+type AccountProps = {
+  onClick: () => void;
+};
+
+const Account: React.FC<AccountProps> = ({ onClick }) => {
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
@@ -24,7 +26,7 @@ function Account() {
 
   return (
     <button
-      onClick={() => navigate("/AccountSettings")}
+      onClick={onClick}
       style={{
         width: "7vh",
         height: "7vh",
@@ -33,16 +35,15 @@ function Account() {
         backgroundColor: "#6D5A4F",
         color: "white",
         textAlign: "center",
-        margin: "35px",
-        marginTop: "-10px",
+        marginLeft: "25px",
+        marginTop: "30px",
         cursor: "pointer",
         fontSize: "40px",
       }}
     >
-      {profile.name ? profile.name.charAt(0).toUpperCase() : "?"}
+      {profile.name ? profile.name.charAt(0).toUpperCase() : "B"}
     </button>
   );
-}
+};
 
 export default Account;
-

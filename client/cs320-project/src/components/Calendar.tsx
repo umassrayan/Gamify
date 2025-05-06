@@ -1,147 +1,212 @@
 import { useState, useEffect } from "react";
-import { getUserCalendarEvents, addUserCalendarEvent } from "../api/firestore"; // Import Firestore functions
+import { getUserCalendarEvents, addUserCalendarEvent } from "../api/firestore"; // adjust path if needed
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
-const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-const dates = [13, 14, 15, 16, 17, 18, 19];
-
-function Calendar() {
+const Calendar: React.FC = () => {
   const userId = "hqbb3FUjX6LLjMKAnqb2"; // Hardcoded for now
-  const [events, setEvents] = useState<string[][]>(
-    Array(7)
-      .fill([])
-      .map(() => [])
-  );
-  const [modalOpen, setModalOpen] = useState(false);
-  const [currentDayIndex, setCurrentDayIndex] = useState<number | null>(null);
+
+  const [events, setEvents] = useState<Record<string, string[]>>({});
+  const [eventModalOpen, setEventModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [inputName, setInputName] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [date, setDate] = useState("");
+  const [dateInput, setDateInput] = useState("");
+
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - today.getDay()); // Sunday
+    start.setHours(0, 0, 0, 0);
+    return start;
+  });
+
+  const weekDates = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(currentWeekStart);
+    date.setDate(date.getDate() + i);
+    return date;
+  });
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [currentWeekStart]);
 
-  async function fetchEvents() {
+  const fetchEvents = async () => {
     try {
       const data = await getUserCalendarEvents(userId);
-      const mappedEvents: string[][] = Array(7)
-        .fill(0)
-        .map(() => []);
+      const startOfWeek = new Date(currentWeekStart);
+      const endOfWeek = new Date(currentWeekStart);
+      endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+      const newEvents: Record<string, string[]> = {};
 
       data.forEach((event: any) => {
         const start = event.startTime.toDate();
         const end = event.endTime.toDate();
-        const dayIndex = start.getDay();
 
-        mappedEvents[dayIndex] = [
-          ...mappedEvents[dayIndex],
-          `${formatTime(start)} – ${formatTime(end)}: ${event.title}`,
-        ];
+        if (start >= startOfWeek && start < endOfWeek) {
+          const key = start.toDateString();
+          const formatted = `${formatTime(start)} – ${formatTime(end)}: ${
+            event.title
+          }`;
+          newEvents[key] = [...(newEvents[key] || []), formatted];
+        }
       });
 
-      setEvents(mappedEvents);
+      setEvents(newEvents);
     } catch (error) {
       console.error("Error fetching calendar events:", error);
     }
-  }
+  };
 
   const handleAddEvent = async () => {
-    if (inputName && currentDayIndex !== null && startTime && endTime) {
-      try {
-        const today = new Date();
-        const selectedDate = new Date(today.getFullYear(), today.getMonth(), dates[currentDayIndex]);
-        const startDateTime = new Date(selectedDate);
-        const endDateTime = new Date(selectedDate);
+    if (!selectedDate || !inputName || !startTime || !endTime) return;
 
-        const [startHour, startMinute] = startTime.split(":").map(Number);
-        const [endHour, endMinute] = endTime.split(":").map(Number);
+    try {
+      const startDateTime = new Date(selectedDate);
+      const endDateTime = new Date(selectedDate);
 
-        startDateTime.setHours(startHour, startMinute);
-        endDateTime.setHours(endHour, endMinute);
+      const [startHour, startMinute] = startTime.split(":").map(Number);
+      const [endHour, endMinute] = endTime.split(":").map(Number);
 
-        await addUserCalendarEvent(userId, {
-          title: inputName,
-          startTime: startDateTime,
-          endTime: endDateTime,
-        });
+      startDateTime.setHours(startHour, startMinute);
+      endDateTime.setHours(endHour, endMinute);
 
-        await fetchEvents();
+      await addUserCalendarEvent(userId, {
+        title: inputName,
+        startTime: startDateTime,
+        endTime: endDateTime,
+      });
 
-        setInputName("");
-        setStartTime("");
-        setEndTime("");
-        setModalOpen(false);
-      } catch (error) {
-        console.error("Failed to add event:", error);
-      }
+      setInputName("");
+      setStartTime("");
+      setEndTime("");
+      setEventModalOpen(false);
+
+      fetchEvents();
+    } catch (error) {
+      console.error("Failed to add event:", error);
     }
   };
 
+  // Handle scroll events to navigate weeks
+  const [scrollDeltaX, setScrollDeltaX] = useState(0);
+  let scrollTimeout: NodeJS.Timeout;
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      setScrollDeltaX((prev) => prev + e.deltaX);
+
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        if (scrollDeltaX > 50) {
+          handleNextWeek(); // swipe left
+        } else if (scrollDeltaX < -50) {
+          handlePrevWeek(); // swipe right
+        }
+        setScrollDeltaX(0);
+      }, 100);
+    }
+  };
+
+  const handlePrevWeek = () => {
+    const newStart = new Date(currentWeekStart);
+    newStart.setDate(newStart.getDate() - 7);
+    setCurrentWeekStart(newStart);
+  };
+
+  const handleNextWeek = () => {
+    const newStart = new Date(currentWeekStart);
+    newStart.setDate(newStart.getDate() + 7);
+    setCurrentWeekStart(newStart);
+  };
+
+  const todayStr = new Date().toDateString();
+
+  const navigate = useNavigate(); // Function to handle navigation to Monthly Calendar
+
   return (
-    <>
+    <button
+      onClick={() => navigate("/monthlycalendar")}
+      style={{ border: "none", backgroundColor: "white", cursor: "pointer" }}
+    >
+      {/* Calendar Grid */}
       <div
+        // the scrolling for previous and next weeks
+        onWheel={handleWheel}
         style={{
           backgroundColor: "#E9E8E0",
-          height: "60vh",
+          height: "55vh",
           display: "grid",
-          gridTemplateColumns: "repeat(7, 2fr)",
+          gridTemplateColumns: "repeat(7, 1fr)",
           gap: ".25rem",
           padding: "1rem",
           borderRadius: "25px",
         }}
       >
-        {dates.map((date, i) => (
-          <div
-            key={i}
-            style={{
-              backgroundColor: "#FFFFFF",
-              padding: ".5rem",
-              textAlign: "center",
-              borderRadius: "25px",
-              minHeight: "45vh",
-              minWidth: "14vh",
-              display: "flex",
-              flexDirection: "column",
-              fontSize: "1.5rem",
-            }}
-          >
-            <div style={{ marginBottom: "1rem" }}>
-              {date} {days[i]}
-            </div>
+        {weekDates.map((date, i) => {
+          const dayLabel = date.toLocaleDateString(undefined, {
+            weekday: "short",
+          });
+          const dateLabel = date.getDate();
+          const key = date.toDateString();
+          const isToday = key === todayStr;
+
+          return (
             <div
+              key={i}
               style={{
-                fontSize: "1rem",
-                marginBottom: "auto",
-                textAlign: "left",
+                backgroundColor: isToday ? "#BEB5AA" : "#FFFFFF",
+                padding: ".5rem",
+                textAlign: "center",
+                borderRadius: "25px",
+                height: "53vh",
+                width: "12.25vh",
+                display: "flex",
+                flexDirection: "column",
+                fontSize: "1.5rem",
+                fontWeight: isToday ? "bold" : "normal",
+                // fontFamily: "Inter, sans-serif",
               }}
             >
-              {events[i].map((event, idx) => (
-                <div key={idx} style={{ marginBottom: "0.5rem" }}>
-                  • {event}
-                </div>
-              ))}
+              <div style={{ marginBottom: "1rem" }}>
+                {dateLabel} {dayLabel}
+              </div>
+              <div
+                style={{
+                  fontSize: "1rem",
+                  textAlign: "left",
+                  marginBottom: "auto",
+                }}
+              >
+                {(events[key] || []).map((event, idx) => (
+                  <div key={idx} style={{ marginBottom: "0.5rem" }}>
+                    • {event}
+                  </div>
+                ))}
+              </div>
+              {/* Add Event button on every day of the week */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEventModalOpen(true);
+                  setSelectedDate(date);
+                  setDateInput(date.toISOString().split("T")[0]);
+                }}
+                style={{
+                  border: "none",
+                  backgroundColor: "transparent",
+                  height: "50vh",
+                  cursor: "pointer",
+                }}
+              ></button>
             </div>
-            <button
-              style={{
-                padding: "0.5rem 0.5rem",
-                fontSize: "1rem",
-                borderRadius: "8px",
-                minHeight: "45vh",
-                border: "none",
-                backgroundColor: "white",
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                setModalOpen(true);
-                setCurrentDayIndex(i);
-              }}
-            ></button>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {modalOpen && (
+      {/* Add Event Modal */}
+      {eventModalOpen && (
         <div
           style={{
             position: "fixed",
@@ -154,6 +219,7 @@ function Calendar() {
             alignItems: "center",
             justifyContent: "center",
             zIndex: 1000,
+            pointerEvents: "auto", // allows clicks to be blocked from background
           }}
         >
           <div
@@ -166,12 +232,14 @@ function Calendar() {
               flexDirection: "column",
               gap: "1rem",
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             <h1
               style={{
                 color: "white",
                 fontSize: "1.25rem",
                 textAlign: "center",
+                fontWeight: "lighter",
               }}
             >
               ADD EVENT
@@ -181,19 +249,26 @@ function Calendar() {
               placeholder="Event Name"
               value={inputName}
               onChange={(e) => setInputName(e.target.value)}
-              style={styles.input}
+              style={{
+                padding: "0.5rem",
+                fontSize: "1rem",
+                borderRadius: "10px",
+                backgroundColor: "white",
+                border: "none",
+                width: "25.4vw",
+                height: "2.5vh",
+                fontWeight: "lighter",
+              }}
             />
-
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <h1 style={styles.inputText}>Date</h1>
               <input
                 type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                value={dateInput}
+                onChange={(e) => setDateInput(e.target.value)}
                 style={styles.input}
               />
             </div>
-
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <h1 style={styles.inputText}>Time</h1>
               <input
@@ -218,12 +293,16 @@ function Calendar() {
               }}
             >
               <button
-                onClick={() => setModalOpen(false)}
+                onClick={() => {
+                  setEventModalOpen(false);
+                }}
                 style={{
                   padding: "0.5rem 1rem",
                   backgroundColor: "#ccc",
                   border: "none",
                   borderRadius: "5px",
+                  fontSize: "1rem",
+                  cursor: "pointer",
                 }}
               >
                 Cancel
@@ -235,6 +314,8 @@ function Calendar() {
                   backgroundColor: "#BEB5AA",
                   border: "none",
                   borderRadius: "5px",
+                  fontSize: "1rem",
+                  cursor: "pointer",
                 }}
               >
                 Add
@@ -243,15 +324,16 @@ function Calendar() {
           </div>
         </div>
       )}
-    </>
+    </button>
   );
-}
+};
 
-// Utility function to format time nicely
+// Utility: Format time to hh:mm
 function formatTime(date: Date) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+// Input styles
 const styles: { [key: string]: React.CSSProperties } = {
   input: {
     padding: "0.5rem",
@@ -259,11 +341,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "10px",
     backgroundColor: "white",
     border: "none",
+    width: "100%",
+    fontWeight: "lighter",
   },
   inputText: {
     fontSize: "1rem",
     color: "white",
     marginTop: "12px",
+    fontWeight: "lighter",
   },
 };
 

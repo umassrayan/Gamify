@@ -103,7 +103,7 @@ const AssignmentBoard: React.FC = () => {
         borderRadius: "8px",
         padding: "10px",
         position: "relative",
-        height: "36vh",
+        height: "32vh",
       }}
     >
       <div

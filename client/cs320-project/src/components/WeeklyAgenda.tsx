@@ -19,8 +19,8 @@ const WeeklyAgenda: React.FC = () => {
     <div
       style={{
         backgroundColor: "#BEB5AA",
-        width: "37vh",
-        height: "60vh",
+        width: "35vh",
+        height: "55vh",
         display: "grid",
         gridTemplateRows: "repeat(6, 2fr)",
         padding: "1rem",
@@ -32,7 +32,7 @@ const WeeklyAgenda: React.FC = () => {
       {days.map((label, index) => (
         <button
           key={index}
-          onClick={() => navigate(`/todo/${daysFullName[index]}`)} // 👈 navigate to dynamic URL
+          onClick={() => navigate(`/todo/${daysFullName[index]}`)} // navigates to the day specific URL
           style={{
             backgroundColor: "#CDC6BD",
             textAlign: "center",
