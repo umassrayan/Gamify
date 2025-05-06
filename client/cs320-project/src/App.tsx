@@ -1,21 +1,28 @@
-import { useAuth } from "./context/AuthContext"; // Import the custom hook
-
-// Import layouts
-import PublicAppLayout from "./components/LoginRegister";
-
-import "./App.css";
-import DashboardLayout from "./components/Dashboard";
+import React from 'react';
+import { useAuth } from './context/AuthContext'; // Import the custom hook
+import PublicAppLayout from './components/LoginRegister';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // <-- Need these imports
+import './App.css';
+import DashboardLayout1 from './components/Dashboard';
 
 const App: React.FC = () => {
-  const { currentUser } = useAuth(); // Access currentUser from context
+    const { currentUser } = useAuth();
+    console.log('Current User in App.tsx:', currentUser);
 
-  // If the user is logged in, show the Dashboard layout
-  if (currentUser) {
-    return <DashboardLayout />;
-  }
-
-  // If no user (logged out), show public login/sign-up pages
-  return <PublicAppLayout />;
+    return (
+        // 1. Need the top-level Router here
+        <Router>
+            {/* 2. Need Routes to define routing rules */}
+            <Routes>
+                {currentUser ? (
+                    // 3. Use Route with /* for layouts containing nested Routes
+                    <Route path="/*" element={<DashboardLayout1 />} />
+                ) : (
+                    <Route path="/*" element={<PublicAppLayout />} />
+                )}
+            </Routes>
+        </Router>
+    );
 };
 
 export default App;

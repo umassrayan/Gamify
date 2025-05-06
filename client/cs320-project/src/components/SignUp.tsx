@@ -59,8 +59,8 @@ const SignUp: React.FC = () => {
                     streakRestoreCount: 0,
                     settings: {
                         theme: 'dark',
-                        notificationsEnabled: true
-                    }
+                        notificationsEnabled: true,
+                    },
                 });
                 console.log('User data saved to Firestore');
             } catch (firestoreError) {
@@ -72,7 +72,7 @@ const SignUp: React.FC = () => {
 
             // Navigate based on "current" version's logic
             console.log('Navigating to dashboard...');
-            navigate('/'); // Using '/' from "current" version
+            navigate('/onboarding'); // Using '/' from "current" version
 
             // No need to setIsLoading(false) on success because we navigate away
         } catch (err) {
