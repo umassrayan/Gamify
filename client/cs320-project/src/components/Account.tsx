@@ -35,13 +35,13 @@ const Account: React.FC<AccountProps> = ({ onClick }) => {
         backgroundColor: "#6D5A4F",
         color: "white",
         textAlign: "center",
-        marginLeft: "35px",
-        marginTop: "-15px",
+        marginLeft: "25px",
+        marginTop: "30px",
         cursor: "pointer",
         fontSize: "40px",
       }}
     >
-      {profile.name ? profile.name.charAt(0).toUpperCase() : "?"}
+      {profile.name ? profile.name.charAt(0).toUpperCase() : "B"}
     </button>
   );
 };

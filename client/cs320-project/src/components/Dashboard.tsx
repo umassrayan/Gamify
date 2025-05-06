@@ -14,6 +14,7 @@ import ToDo from "./ToDo";
 import AssignmentBoard from "./Assignment"; // Ensure correct path/name
 import ClassBoard from "./ClassBoard";
 import ClassPage from "./ClassPage";
+import MonthlyCalendar from "./MonthlyCalendar";
 
 function Main() {
   // If the current URL starts with /todo/, we know a day-specific page is selected
@@ -21,7 +22,14 @@ function Main() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div style={{ display: "flex" }}>
+    <div
+      style={{
+        display: "flex",
+        height: "100vh",
+        width: "100vw",
+        overflow: "hidden",
+      }}
+    >
       <div>
         {/* Left Column */}
         <ProgressBar progress={65} />
@@ -69,6 +77,7 @@ const DashboardLayout: React.FC = () => {
       />
       <Route path="/todo/:day" element={<Main />} />
       <Route path="/class/:id" element={<ClassPage />} />
+      <Route path="/monthlycalendar" element={<MonthlyCalendar />} />
       {/* Add other dashboard-specific routes here */}
       {/* Example: Redirect unmatched dashboard routes */}
       {/* <Route path="*" element={<Navigate to="/" replace />} /> */}

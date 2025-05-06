@@ -7,8 +7,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => (
     <div
       style={{
         fontWeight: "bold",
-        margin: "50px",
-        textAlign: "left",
+        margin: "40px",
+        textAlign: "center",
       }}
     >
       {progress}%
@@ -22,8 +22,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => (
         overflow: "hidden",
         display: "flex",
         flexDirection: "column-reverse",
-        margin: "50px",
-        marginTop: "-40px",
+        marginLeft: "40px",
+        marginTop: "-10px",
       }}
     >
       <div
