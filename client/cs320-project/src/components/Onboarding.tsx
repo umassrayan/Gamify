@@ -16,7 +16,8 @@ interface ClassDetail {
 
 // --- IMPORTANT: Replace with your actual Google Maps API Key ---
 // Ensure this key is secured, ideally using environment variables.
-const Maps_API_KEY = 'AIzaSyB5jOhFAYAzT5dkKGB7yPjTLXJPl_EE-dI';
+const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY; // For Vite
+const Maps_API_KEY = apiKey;
 const libraries: 'places'[] = ['places']; // Specify Places library
 
 const OnboardingFlow: React.FC = () => {
