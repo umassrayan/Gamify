@@ -133,7 +133,7 @@ const OnboardingFlow: React.FC = () => {
       });
 
       console.log("Courses saved successfully.");
-      navigate('/dashboard');
+      navigate('/');
     } catch (error) {
       console.error("Error saving onboarding data:", error);
       alert("There was an error saving your class info.");
