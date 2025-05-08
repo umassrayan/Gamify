@@ -5,6 +5,7 @@ import ProgressBar from "./ProgressBar";
 import Account from "./Account";
 import Calendar from "./Calendar";
 
+
 const ClassPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 

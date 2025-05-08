@@ -1,32 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-
-import { signOut } from "firebase/auth"; // Import signOut function
-import { auth } from "../firebase"; // Import your auth instance (adjust path if needed)
+import { signOut } from "firebase/auth";
+import { auth, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { useAuth } from "../context/AuthContext";
 
 type Props = {
   onClose: () => void;
 };
 
 const AccountSettings: React.FC<Props> = ({ onClose }) => {
-  const navigate = useNavigate(); // Hook for navigation after logout
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const [userData, setUserData] = useState<any>(null);
 
-  // --- Logout Handler ---
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!currentUser) return;
+
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          setUserData(userSnap.data());
+        }
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
+    };
+
+    fetchUserData();
+  }, [currentUser]);
+
   const handleLogout = async () => {
-    console.log("Attempting to log out (DashboardLayout1)...");
     try {
       await signOut(auth);
-      console.log("User signed out successfully.");
-      // AuthProvider's onAuthStateChanged listener will handle the state update.
-      // Optional: Navigate to sign-in page immediately.
-      navigate("/signin"); // Or '/' if public layout handles root
+      navigate("/signin");
     } catch (error) {
       console.error("Error signing out:", error);
-      // Optionally display an error message to the user
     }
   };
-  // --- End Logout Handler ---
+
   return (
     <>
       {/* Dark overlay */}
@@ -49,9 +64,9 @@ const AccountSettings: React.FC<Props> = ({ onClose }) => {
 
       {/* Sidebar */}
       <motion.div
-        initial={{ x: -300 }}
+        initial={{ x: "-100%" }}
         animate={{ x: 0 }}
-        exit={{ x: -300 }}
+        exit={{ x: "-100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         style={{
           position: "fixed",
@@ -59,54 +74,45 @@ const AccountSettings: React.FC<Props> = ({ onClose }) => {
           left: 0,
           height: "100vh",
           width: "300px",
-          backgroundColor: "#f4f4f4",
+          backgroundColor: "white",
           zIndex: 1000,
-          padding: "20px",
-          boxShadow: "2px 0 10px rgba(0, 0, 0, 0.2)",
+          padding: "2rem",
+          boxShadow: "2px 0 5px rgba(0,0,0,0.1)",
+          overflowY: "auto",
         }}
       >
-        {/* <button
-          onClick={onClose}
-          style={{
-            padding: "8px 12px",
-            backgroundColor: "#6D5A4F",
-            color: "#fff",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            marginBottom: "20px",
-          }}
-        >
-          Close
-        </button> */}
-        {/* --- Logout Button Added Here --- */}
         <button
           onClick={handleLogout}
           style={{
-            padding: "10px 15px",
-            backgroundColor: "#dc3545", // Red color for logout
+            padding: "8px 16px",
+            backgroundColor: "#d9534f",
             color: "white",
             border: "none",
             borderRadius: "5px",
             cursor: "pointer",
-            fontSize: "1rem",
-            // marginLeft: "22vh",
+            marginBottom: "1rem",
           }}
         >
           Log Out
-        </button>{" "}
-        {/* DATABASE TODO: Connect the database information to store here: */}
-        {/* --- End Logout Button --- */}
+        </button>
+
         <h2>Account Settings</h2>
-        <p>Name: </p>
-        <p>Email: </p>
-        <p>Total Points: </p>
-        <p>Current Streak: </p>
-        <p>Last Tracked Attendance: </p>
-        <p>Restored Streak Count: </p>
-        <h2>User Preferences</h2>
-        <p>Theme: </p>
-        <p>Enable Notifications? </p>
+        {userData ? (
+          <>
+            <p><strong>Name:</strong> {userData.name}</p>
+            <p><strong>Email:</strong> {userData.email}</p>
+            <p><strong>Total Points:</strong> {userData.totalPoints}</p>
+            <p><strong>Current Streak:</strong> {userData.currentStreak}</p>
+            <p><strong>Last Tracked Attendance:</strong> {new Date(userData.lastAttendanceDateTime?.seconds * 1000).toLocaleString()}</p>
+            <p><strong>Restored Streak Count:</strong> {userData.streakRestoreCount}</p>
+
+            <h3>User Preferences</h3>
+            <p><strong>Theme:</strong> {userData.settings?.theme}</p>
+            <p><strong>Enable Notifications?</strong> {userData.settings?.notificationsEnabled ? "Yes" : "No"}</p>
+          </>
+        ) : (
+          <p>Loading account info...</p>
+        )}
       </motion.div>
     </>
   );

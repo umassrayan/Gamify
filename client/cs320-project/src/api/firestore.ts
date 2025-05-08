@@ -41,13 +41,22 @@ export async function getCoursesForUser(userId: string) {
 }
 
 // Add a new calendar event for the user
-export async function addUserCalendarEvent(userId: string, event: { title: string; startTime: Date; endTime: Date; }) {
+  export async function addUserCalendarEvent(
+    userId: string,
+    event: {
+      title: string;
+      startTime: Date;
+      endTime: Date;
+      classCode?: string | null; // allow class-specific filtering
+    }
+  ) {
     const calendarEventsRef = collection(db, "users", userId, "calendarEvents");
     await addDoc(calendarEventsRef, {
       title: event.title,
       startTime: event.startTime,
       endTime: event.endTime,
-      type: "custom", // Optional: if you want to label custom events differently
-      colorTag: "default", // Optional: if your calendar supports colors
+      classCode: event.classCode || null, // write classCode if provided
+      type: "custom",
+      colorTag: "default",
     });
   }

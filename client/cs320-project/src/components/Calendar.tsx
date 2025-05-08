@@ -1,11 +1,28 @@
 import { useState, useEffect } from "react";
-import { getUserCalendarEvents, addUserCalendarEvent } from "../api/firestore"; // adjust path if needed
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { getUserCalendarEvents, addUserCalendarEvent } from "../api/firestore";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const Calendar: React.FC = () => {
-  const userId = "hqbb3FUjX6LLjMKAnqb2"; // Hardcoded for now
+// Props
+interface CalendarProps {
+  classFilter?: string;
+  condensed?: boolean;
+}
 
-  const [events, setEvents] = useState<Record<string, string[]>>({});
+// Types
+type CalendarEvent = {
+  time: string;
+  title: string;
+  start: Date;
+};
+
+type EventMap = Record<string, CalendarEvent[]>;
+
+const Calendar: React.FC<CalendarProps> = ({ classFilter, condensed }) => {
+  const { currentUser } = useAuth();
+  const userId = currentUser?.uid;
+
+  const [events, setEvents] = useState<EventMap>({});
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [inputName, setInputName] = useState("");
@@ -16,7 +33,7 @@ const Calendar: React.FC = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
     const start = new Date(today);
-    start.setDate(today.getDate() - today.getDay()); // Sunday
+    start.setDate(today.getDate() - today.getDay());
     start.setHours(0, 0, 0, 0);
     return start;
   });
@@ -28,28 +45,37 @@ const Calendar: React.FC = () => {
   });
 
   useEffect(() => {
+    if (!userId) return;
     fetchEvents();
-  }, [currentWeekStart]);
+  }, [currentWeekStart, userId, classFilter]);
 
   const fetchEvents = async () => {
+    if (!userId) return;
     try {
       const data = await getUserCalendarEvents(userId);
       const startOfWeek = new Date(currentWeekStart);
       const endOfWeek = new Date(currentWeekStart);
       endOfWeek.setDate(endOfWeek.getDate() + 7);
 
-      const newEvents: Record<string, string[]> = {};
+      const newEvents: EventMap = {};
 
       data.forEach((event: any) => {
         const start = event.startTime.toDate();
         const end = event.endTime.toDate();
+        const eventClass = event.classCode || ""; // <- Firestore field
 
-        if (start >= startOfWeek && start < endOfWeek) {
+        if (
+          start >= startOfWeek &&
+          start < endOfWeek &&
+          (!classFilter || eventClass === classFilter)
+        ) {
           const key = start.toDateString();
-          const formatted = `${formatTime(start)} – ${formatTime(end)}: ${
-            event.title
-          }`;
-          newEvents[key] = [...(newEvents[key] || []), formatted];
+          const eventEntry: CalendarEvent = {
+            time: `${formatTime(start)} – ${formatTime(end)}`,
+            title: event.title,
+            start,
+          };
+          newEvents[key] = [...(newEvents[key] || []), eventEntry];
         }
       });
 
@@ -60,12 +86,11 @@ const Calendar: React.FC = () => {
   };
 
   const handleAddEvent = async () => {
-    if (!selectedDate || !inputName || !startTime || !endTime) return;
+    if (!selectedDate || !inputName || !startTime || !endTime || !userId) return;
 
     try {
       const startDateTime = new Date(selectedDate);
       const endDateTime = new Date(selectedDate);
-
       const [startHour, startMinute] = startTime.split(":").map(Number);
       const [endHour, endMinute] = endTime.split(":").map(Number);
 
@@ -76,34 +101,29 @@ const Calendar: React.FC = () => {
         title: inputName,
         startTime: startDateTime,
         endTime: endDateTime,
+        classCode: classFilter || null,
       });
 
       setInputName("");
       setStartTime("");
       setEndTime("");
       setEventModalOpen(false);
-
       fetchEvents();
     } catch (error) {
       console.error("Failed to add event:", error);
     }
   };
 
-  // Handle scroll events to navigate weeks
   const [scrollDeltaX, setScrollDeltaX] = useState(0);
   let scrollTimeout: NodeJS.Timeout;
 
   const handleWheel = (e: React.WheelEvent) => {
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
       setScrollDeltaX((prev) => prev + e.deltaX);
-
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
-        if (scrollDeltaX > 50) {
-          handleNextWeek(); // swipe left
-        } else if (scrollDeltaX < -50) {
-          handlePrevWeek(); // swipe right
-        }
+        if (scrollDeltaX > 50) handleNextWeek();
+        else if (scrollDeltaX < -50) handlePrevWeek();
         setScrollDeltaX(0);
       }, 100);
     }
@@ -122,33 +142,32 @@ const Calendar: React.FC = () => {
   };
 
   const todayStr = new Date().toDateString();
-
-  const navigate = useNavigate(); // Function to handle navigation to Monthly Calendar
+  const navigate = useNavigate();
 
   return (
     <button
-      onClick={() => navigate("/monthlycalendar")}
-      style={{ border: "none", backgroundColor: "white", cursor: "pointer" }}
-    >
-      {/* Calendar Grid */}
+    onClick={(e) => {
+      // Only navigate if the active element is not an input or textarea
+      const tag = document.activeElement?.tagName.toLowerCase();
+      if (tag !== "input" && tag !== "textarea") {
+        navigate("/monthlycalendar");
+      }
+    }}
+    style={{ border: "none", backgroundColor: "white", cursor: "pointer" }}
+  >
       <div
-        // the scrolling for previous and next weeks
         onWheel={handleWheel}
         style={{
           backgroundColor: "#E9E8E0",
-          height: "55vh",
+          height: condensed ? "30vh" : "55vh",
           display: "grid",
           gridTemplateColumns: "repeat(7, 1fr)",
           gap: ".25rem",
-          padding: "1rem",
+          padding: condensed ? "0.5rem" : "1rem",
           borderRadius: "25px",
         }}
       >
         {weekDates.map((date, i) => {
-          const dayLabel = date.toLocaleDateString(undefined, {
-            weekday: "short",
-          });
-          const dateLabel = date.getDate();
           const key = date.toDateString();
           const isToday = key === todayStr;
 
@@ -160,32 +179,46 @@ const Calendar: React.FC = () => {
                 padding: ".5rem",
                 textAlign: "center",
                 borderRadius: "25px",
-                height: "53vh",
-                width: "12.25vh",
+                height: condensed ? "28vh" : "53vh",
                 display: "flex",
                 flexDirection: "column",
-                fontSize: "1.5rem",
+                fontSize: condensed ? "1rem" : "1.5rem",
                 fontWeight: isToday ? "bold" : "normal",
-                // fontFamily: "Inter, sans-serif",
               }}
             >
               <div style={{ marginBottom: "1rem" }}>
-                {dateLabel} {dayLabel}
+                {date.getDate()}{" "}
+                {date.toLocaleDateString(undefined, { weekday: "short" })}
               </div>
               <div
                 style={{
-                  fontSize: "1rem",
+                  fontSize: "0.9rem",
                   textAlign: "left",
                   marginBottom: "auto",
                 }}
               >
-                {(events[key] || []).map((event, idx) => (
-                  <div key={idx} style={{ marginBottom: "0.5rem" }}>
-                    • {event}
-                  </div>
-                ))}
+                {[...(events[key] || [])]
+  .sort((a, b) => a.start.getTime() - b.start.getTime())
+  .map((event, idx) => (
+    <div
+      key={idx}
+      style={{
+        backgroundColor: "#fff",
+        color: "#3c2f2f",
+        padding: "8px 12px",
+        borderRadius: "8px",
+        boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
+        marginBottom: "0.5rem",
+        fontSize: "0.85rem",
+        fontWeight: 400,
+        lineHeight: 1.4,
+      }}
+    >
+      <div style={{ fontWeight: 600 }}>{event.time}</div>
+      <div style={{ fontStyle: "italic" }}>{event.title}</div>
+    </div>
+))}
               </div>
-              {/* Add Event button on every day of the week */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -196,7 +229,7 @@ const Calendar: React.FC = () => {
                 style={{
                   border: "none",
                   backgroundColor: "transparent",
-                  height: "50vh",
+                  height: condensed ? "25vh" : "50vh",
                   cursor: "pointer",
                 }}
               ></button>
@@ -205,7 +238,7 @@ const Calendar: React.FC = () => {
         })}
       </div>
 
-      {/* Add Event Modal */}
+      {/* Modal remains unchanged */}
       {eventModalOpen && (
         <div
           style={{
@@ -219,7 +252,7 @@ const Calendar: React.FC = () => {
             alignItems: "center",
             justifyContent: "center",
             zIndex: 1000,
-            pointerEvents: "auto", // allows clicks to be blocked from background
+            pointerEvents: "auto",
           }}
         >
           <div
@@ -234,31 +267,13 @@ const Calendar: React.FC = () => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h1
-              style={{
-                color: "white",
-                fontSize: "1.25rem",
-                textAlign: "center",
-                fontWeight: "lighter",
-              }}
-            >
-              ADD EVENT
-            </h1>
+            <h1 style={styles.inputText}>ADD EVENT</h1>
             <input
               type="text"
               placeholder="Event Name"
               value={inputName}
               onChange={(e) => setInputName(e.target.value)}
-              style={{
-                padding: "0.5rem",
-                fontSize: "1rem",
-                borderRadius: "10px",
-                backgroundColor: "white",
-                border: "none",
-                width: "25.4vw",
-                height: "2.5vh",
-                fontWeight: "lighter",
-              }}
+              style={styles.input}
             />
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <h1 style={styles.inputText}>Date</h1>
@@ -285,17 +300,9 @@ const Calendar: React.FC = () => {
                 style={styles.input}
               />
             </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "0.5rem",
-              }}
-            >
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
               <button
-                onClick={() => {
-                  setEventModalOpen(false);
-                }}
+                onClick={() => setEventModalOpen(false)}
                 style={{
                   padding: "0.5rem 1rem",
                   backgroundColor: "#ccc",
@@ -328,12 +335,10 @@ const Calendar: React.FC = () => {
   );
 };
 
-// Utility: Format time to hh:mm
 function formatTime(date: Date) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-// Input styles
 const styles: { [key: string]: React.CSSProperties } = {
   input: {
     padding: "0.5rem",
