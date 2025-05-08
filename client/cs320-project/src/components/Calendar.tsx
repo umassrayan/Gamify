@@ -1,20 +1,24 @@
 import { useState, useEffect } from "react";
-import {
-  getUserCalendarEvents,
-  addUserCalendarEvent,
-} from "../api/firestore";
+import { getUserCalendarEvents, addUserCalendarEvent } from "../api/firestore";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
+// Props
+interface CalendarProps {
+  classFilter?: string;
+  condensed?: boolean;
+}
 
 // Types
 type CalendarEvent = {
   time: string;
   title: string;
+  start: Date;
 };
 
 type EventMap = Record<string, CalendarEvent[]>;
 
-const Calendar: React.FC = () => {
+const Calendar: React.FC<CalendarProps> = ({ classFilter, condensed }) => {
   const { currentUser } = useAuth();
   const userId = currentUser?.uid;
 
@@ -43,7 +47,7 @@ const Calendar: React.FC = () => {
   useEffect(() => {
     if (!userId) return;
     fetchEvents();
-  }, [currentWeekStart, userId]);
+  }, [currentWeekStart, userId, classFilter]);
 
   const fetchEvents = async () => {
     if (!userId) return;
@@ -58,12 +62,18 @@ const Calendar: React.FC = () => {
       data.forEach((event: any) => {
         const start = event.startTime.toDate();
         const end = event.endTime.toDate();
+        const eventClass = event.classCode || ""; // <- Firestore field
 
-        if (start >= startOfWeek && start < endOfWeek) {
+        if (
+          start >= startOfWeek &&
+          start < endOfWeek &&
+          (!classFilter || eventClass === classFilter)
+        ) {
           const key = start.toDateString();
           const eventEntry: CalendarEvent = {
             time: `${formatTime(start)} – ${formatTime(end)}`,
             title: event.title,
+            start,
           };
           newEvents[key] = [...(newEvents[key] || []), eventEntry];
         }
@@ -81,9 +91,8 @@ const Calendar: React.FC = () => {
     try {
       const startDateTime = new Date(selectedDate);
       const endDateTime = new Date(selectedDate);
-
-      const [startHour, startMinute] = startTime.split(":" ).map(Number);
-      const [endHour, endMinute] = endTime.split(":" ).map(Number);
+      const [startHour, startMinute] = startTime.split(":").map(Number);
+      const [endHour, endMinute] = endTime.split(":").map(Number);
 
       startDateTime.setHours(startHour, startMinute);
       endDateTime.setHours(endHour, endMinute);
@@ -92,13 +101,13 @@ const Calendar: React.FC = () => {
         title: inputName,
         startTime: startDateTime,
         endTime: endDateTime,
+        classCode: classFilter || null,
       });
 
       setInputName("");
       setStartTime("");
       setEndTime("");
       setEventModalOpen(false);
-
       fetchEvents();
     } catch (error) {
       console.error("Failed to add event:", error);
@@ -137,24 +146,28 @@ const Calendar: React.FC = () => {
 
   return (
     <button
-      onClick={() => navigate("/monthlycalendar")}
-      style={{ border: "none", backgroundColor: "white", cursor: "pointer" }}
-    >
+    onClick={(e) => {
+      // Only navigate if the active element is not an input or textarea
+      const tag = document.activeElement?.tagName.toLowerCase();
+      if (tag !== "input" && tag !== "textarea") {
+        navigate("/monthlycalendar");
+      }
+    }}
+    style={{ border: "none", backgroundColor: "white", cursor: "pointer" }}
+  >
       <div
         onWheel={handleWheel}
         style={{
           backgroundColor: "#E9E8E0",
-          height: "55vh",
+          height: condensed ? "30vh" : "55vh",
           display: "grid",
           gridTemplateColumns: "repeat(7, 1fr)",
           gap: ".25rem",
-          padding: "1rem",
+          padding: condensed ? "0.5rem" : "1rem",
           borderRadius: "25px",
         }}
       >
         {weekDates.map((date, i) => {
-          const dayLabel = date.toLocaleDateString(undefined, { weekday: "short" });
-          const dateLabel = date.getDate();
           const key = date.toDateString();
           const isToday = key === todayStr;
 
@@ -166,37 +179,45 @@ const Calendar: React.FC = () => {
                 padding: ".5rem",
                 textAlign: "center",
                 borderRadius: "25px",
-                height: "53vh",
-                width: "12.25vh",
+                height: condensed ? "28vh" : "53vh",
                 display: "flex",
                 flexDirection: "column",
-                fontSize: "1.5rem",
+                fontSize: condensed ? "1rem" : "1.5rem",
                 fontWeight: isToday ? "bold" : "normal",
               }}
             >
               <div style={{ marginBottom: "1rem" }}>
-                {dateLabel} {dayLabel}
+                {date.getDate()}{" "}
+                {date.toLocaleDateString(undefined, { weekday: "short" })}
               </div>
-              <div style={{ fontSize: "1rem", textAlign: "left", marginBottom: "auto" }}>
-                {(events[key] || []).map((event, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      backgroundColor: "#fff",
-                      color: "#3c2f2f",
-                      padding: "8px 12px",
-                      borderRadius: "8px",
-                      boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
-                      marginBottom: "0.5rem",
-                      fontSize: "0.85rem",
-                      fontWeight: 400,
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    <div style={{ fontWeight: 600 }}>{event.time}</div>
-                    <div style={{ fontStyle: "italic" }}>{event.title}</div>
-                  </div>
-                ))}
+              <div
+                style={{
+                  fontSize: "0.9rem",
+                  textAlign: "left",
+                  marginBottom: "auto",
+                }}
+              >
+                {[...(events[key] || [])]
+  .sort((a, b) => a.start.getTime() - b.start.getTime())
+  .map((event, idx) => (
+    <div
+      key={idx}
+      style={{
+        backgroundColor: "#fff",
+        color: "#3c2f2f",
+        padding: "8px 12px",
+        borderRadius: "8px",
+        boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
+        marginBottom: "0.5rem",
+        fontSize: "0.85rem",
+        fontWeight: 400,
+        lineHeight: 1.4,
+      }}
+    >
+      <div style={{ fontWeight: 600 }}>{event.time}</div>
+      <div style={{ fontStyle: "italic" }}>{event.title}</div>
+    </div>
+))}
               </div>
               <button
                 onClick={(e) => {
@@ -205,13 +226,19 @@ const Calendar: React.FC = () => {
                   setSelectedDate(date);
                   setDateInput(date.toISOString().split("T")[0]);
                 }}
-                style={{ border: "none", backgroundColor: "transparent", height: "50vh", cursor: "pointer" }}
+                style={{
+                  border: "none",
+                  backgroundColor: "transparent",
+                  height: condensed ? "25vh" : "50vh",
+                  cursor: "pointer",
+                }}
               ></button>
             </div>
           );
         })}
       </div>
 
+      {/* Modal remains unchanged */}
       {eventModalOpen && (
         <div
           style={{
@@ -240,31 +267,13 @@ const Calendar: React.FC = () => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h1
-              style={{
-                color: "white",
-                fontSize: "1.25rem",
-                textAlign: "center",
-                fontWeight: "lighter",
-              }}
-            >
-              ADD EVENT
-            </h1>
+            <h1 style={styles.inputText}>ADD EVENT</h1>
             <input
               type="text"
               placeholder="Event Name"
               value={inputName}
               onChange={(e) => setInputName(e.target.value)}
-              style={{
-                padding: "0.5rem",
-                fontSize: "1rem",
-                borderRadius: "10px",
-                backgroundColor: "white",
-                border: "none",
-                width: "25.4vw",
-                height: "2.5vh",
-                fontWeight: "lighter",
-              }}
+              style={styles.input}
             />
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <h1 style={styles.inputText}>Date</h1>

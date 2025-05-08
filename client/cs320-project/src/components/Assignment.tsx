@@ -219,7 +219,7 @@ const AssignmentBoard: React.FC = () => {
         <thead style={theadStyle}>
           <tr>
             <th style={thStyle}>Title</th>
-            <th style={thStyle}>Description</th>
+            <th style={thStyle}>Course</th>
             <th style={thStyle}>Due Date</th>
             <th style={thStyle}>Completed</th>
             <th style={thStyle}></th>
