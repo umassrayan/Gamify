@@ -5,8 +5,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Imports needed for the "current" functionality's Firebase logic
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db, doc, setDoc } from '../firebase'; // Using imports from "current" version
+import { auth, db, doc, setDoc} from '../firebase'; // Using imports from "current" version
 import { FirebaseError } from 'firebase/app'; // Using import from "current" version
+import { collection, addDoc } from 'firebase/firestore'; // ensure these are imported
+
 
 // Using state structure from "previous" version to match JSX
 const SignUp: React.FC = () => {
@@ -23,62 +25,47 @@ const SignUp: React.FC = () => {
     // but adapted to use the state variables from the "previous" version.
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Using validation from "previous" version (checking all fields)
+    
         if (!firstName || !lastName || !email || !password) {
             setError('Please fill in all fields.');
             return;
         }
-        // Adding password length check from "current" version's logic
+    
         if (password.length < 6) {
             setError('Password must be at least 6 characters long.');
             return;
         }
-
-        // Setting loading state (from "current" version)
+    
         setIsLoading(true);
-        setError(''); // Clear previous errors (was missing setError('') in previous, good practice)
-
+        setError('');
+    
         try {
             console.log('Attempting Firebase registration for:', email);
-            // Using Firebase function call from "current" version, with adapted state vars
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             console.log('Firebase user created successfully:', user.uid);
-
-            // --- Using Firestore saving logic inspired by "current" version ---
-            // --- Adapted to save separate firstName/lastName from "previous" state structure ---
-            try {
-                const userDocRef = doc(db, 'users', user.uid);
-                await setDoc(userDocRef, {
-                    email: user.email,
-                    name: `${firstName} ${lastName}`,
-                    currentStreak: 0,
-                    totalPoints: 0,
-                    lastAttendanceDateTime: new Date(),
-                    streakRestoreCount: 0,
-                    settings: {
-                        theme: 'dark',
-                        notificationsEnabled: true
-                    }
-                });
-                console.log('User data saved to Firestore');
-            } catch (firestoreError) {
-                console.error('Error saving user data to Firestore:', firestoreError);
-                // Decide how to handle this - maybe log it but still proceed?
-                // Or set an error message specific to this failure
-            }
-            // --- End Firestore section ---
-
-            // Navigate based on "current" version's logic
-            console.log('Navigating to dashboard...');
-            navigate('/'); // Using '/' from "current" version
-
-            // No need to setIsLoading(false) on success because we navigate away
+    
+            const userDocRef = doc(db, 'users', user.uid);
+            await setDoc(userDocRef, {
+                email: user.email,
+                name: `${firstName} ${lastName}`,
+                currentStreak: 0,
+                totalPoints: 0,
+                lastAttendanceDateTime: new Date(),
+                streakRestoreCount: 0,
+                settings: {
+                    theme: 'dark',
+                    notificationsEnabled: true,
+                },
+            });
+            console.log('User data saved to Firestore');
+    
+            console.log('Dummy subcollections seeded');
+    
+            navigate('/onboarding');
         } catch (err) {
-            // Using error handling from "current" version
             console.error('Firebase registration error:', err);
-
+    
             if (err instanceof FirebaseError) {
                 console.error('Firebase Error Code:', err.code);
                 if (err.code === 'auth/email-already-in-use') {
@@ -92,7 +79,7 @@ const SignUp: React.FC = () => {
                 setError('An unexpected error occurred. Please try again.');
                 console.error('Non-Firebase Error:', err);
             }
-            // Set loading false only on error (from "current" version)
+    
             setIsLoading(false);
         }
     };

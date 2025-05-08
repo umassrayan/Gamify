@@ -1,31 +1,54 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { useAuth } from "../context/AuthContext";
 
-interface ClassType {
-  id: number;
-  code: string;
+interface CourseClass {
+  name: string;
+  class_code?: string;
+  location?: string;
 }
-
-const classList: ClassType[] = [
-  { id: 1, code: "CSC230" },
-  { id: 2, code: "MTH101" },
-  { id: 3, code: "ENG150" },
-  { id: 4, code: "BIO110" },
-];
 
 const ClassBoard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { currentUser } = useAuth();
+  const db = getFirestore();
 
-  // Extract the selected class ID from the URL (if any)
-  const match = location.pathname.match(/^\/class\/(\d+)$/);
-  const currentClassId = match ? parseInt(match[1]) : null;
+  const [classes, setClasses] = useState<CourseClass[]>([]);
 
-  const handleClassClick = (classId: number) => {
-    if (currentClassId === classId) {
-      navigate("/"); // If already on the class page, go back to main page
+  const match = location.pathname.match(/^\/class\/(.+)$/);
+  const currentClassCode = match ? match[1] : null;
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      if (!currentUser) return;
+      const userId = currentUser.uid;
+      const coursesRef = collection(db, "users", userId, "courses");
+      const courseSnapshots = await getDocs(coursesRef);
+
+      const loaded: CourseClass[] = [];
+
+      courseSnapshots.forEach((doc) => {
+        const data = doc.data();
+        if (Array.isArray(data.classes)) {
+          data.classes.forEach((c: CourseClass) => {
+            if (c.class_code || c.name) loaded.push(c);
+          });
+        }
+      });
+
+      setClasses(loaded);
+    };
+
+    fetchCourses();
+  }, [currentUser]);
+
+  const handleClassClick = (code: string) => {
+    if (currentClassCode === code) {
+      navigate("/"); // Already selected → go home
     } else {
-      navigate(`/class/${classId}`); // Otherwise go to selected class
+      navigate(`/class/${code}`);
     }
   };
 
@@ -41,13 +64,15 @@ const ClassBoard: React.FC = () => {
         height: "30vh",
       }}
     >
-      {classList.map((classItem) => (
+      {classes.map((classItem, idx) => (
         <div
-          key={classItem.id}
-          onClick={() => handleClassClick(classItem.id)}
+          key={idx}
+          onClick={() => handleClassClick(classItem.class_code || classItem.name)}
           style={{
             backgroundColor:
-              currentClassId === classItem.id ? "#3c2f2f" : "#f4f1ee",
+              currentClassCode === (classItem.class_code || classItem.name)
+                ? "#3c2f2f"
+                : "#f4f1ee",
             padding: "20px",
             borderRadius: "8px",
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
@@ -57,11 +82,14 @@ const ClassBoard: React.FC = () => {
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            color: currentClassId === classItem.id ? "#fff" : "#3c2f2f",
+            color:
+              currentClassCode === (classItem.class_code || classItem.name)
+                ? "#fff"
+                : "#3c2f2f",
           }}
         >
           <div style={{ fontWeight: "bold", fontSize: "18px" }}>
-            {classItem.code}
+            {classItem.class_code || classItem.name}
           </div>
         </div>
       ))}
@@ -70,3 +98,4 @@ const ClassBoard: React.FC = () => {
 };
 
 export default ClassBoard;
+

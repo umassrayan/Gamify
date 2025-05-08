@@ -1,151 +1,245 @@
 import { useState, useEffect } from "react";
-import { getUserCalendarEvents, addUserCalendarEvent } from "../api/firestore"; // Import Firestore functions
+import { getUserCalendarEvents, addUserCalendarEvent } from "../api/firestore";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-const dates = [13, 14, 15, 16, 17, 18, 19];
+// Props
+interface CalendarProps {
+  classFilter?: string;
+  condensed?: boolean;
+}
 
-function Calendar() {
-  const userId = "hqbb3FUjX6LLjMKAnqb2"; // Hardcoded for now
-  const [events, setEvents] = useState<string[][]>(
-    Array(7)
-      .fill([])
-      .map(() => [])
-  );
-  const [modalOpen, setModalOpen] = useState(false);
-  const [currentDayIndex, setCurrentDayIndex] = useState<number | null>(null);
+// Types
+type CalendarEvent = {
+  time: string;
+  title: string;
+  start: Date;
+};
+
+type EventMap = Record<string, CalendarEvent[]>;
+
+const Calendar: React.FC<CalendarProps> = ({ classFilter, condensed }) => {
+  const { currentUser } = useAuth();
+  const userId = currentUser?.uid;
+
+  const [events, setEvents] = useState<EventMap>({});
+  const [eventModalOpen, setEventModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [inputName, setInputName] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [date, setDate] = useState("");
+  const [dateInput, setDateInput] = useState("");
+
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - today.getDay());
+    start.setHours(0, 0, 0, 0);
+    return start;
+  });
+
+  const weekDates = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(currentWeekStart);
+    date.setDate(date.getDate() + i);
+    return date;
+  });
 
   useEffect(() => {
+    if (!userId) return;
     fetchEvents();
-  }, []);
+  }, [currentWeekStart, userId, classFilter]);
 
-  async function fetchEvents() {
+  const fetchEvents = async () => {
+    if (!userId) return;
     try {
       const data = await getUserCalendarEvents(userId);
-      const mappedEvents: string[][] = Array(7)
-        .fill(0)
-        .map(() => []);
+      const startOfWeek = new Date(currentWeekStart);
+      const endOfWeek = new Date(currentWeekStart);
+      endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+      const newEvents: EventMap = {};
 
       data.forEach((event: any) => {
         const start = event.startTime.toDate();
         const end = event.endTime.toDate();
-        const dayIndex = start.getDay();
+        const eventClass = event.classCode || ""; // <- Firestore field
 
-        mappedEvents[dayIndex] = [
-          ...mappedEvents[dayIndex],
-          `${formatTime(start)} – ${formatTime(end)}: ${event.title}`,
-        ];
+        if (
+          start >= startOfWeek &&
+          start < endOfWeek &&
+          (!classFilter || eventClass === classFilter)
+        ) {
+          const key = start.toDateString();
+          const eventEntry: CalendarEvent = {
+            time: `${formatTime(start)} – ${formatTime(end)}`,
+            title: event.title,
+            start,
+          };
+          newEvents[key] = [...(newEvents[key] || []), eventEntry];
+        }
       });
 
-      setEvents(mappedEvents);
+      setEvents(newEvents);
     } catch (error) {
       console.error("Error fetching calendar events:", error);
     }
-  }
+  };
 
   const handleAddEvent = async () => {
-    if (inputName && currentDayIndex !== null && startTime && endTime) {
-      try {
-        const today = new Date();
-        const selectedDate = new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          dates[currentDayIndex]
-        );
-        const startDateTime = new Date(selectedDate);
-        const endDateTime = new Date(selectedDate);
+    if (!selectedDate || !inputName || !startTime || !endTime || !userId) return;
 
-        const [startHour, startMinute] = startTime.split(":").map(Number);
-        const [endHour, endMinute] = endTime.split(":").map(Number);
+    try {
+      const startDateTime = new Date(selectedDate);
+      const endDateTime = new Date(selectedDate);
+      const [startHour, startMinute] = startTime.split(":").map(Number);
+      const [endHour, endMinute] = endTime.split(":").map(Number);
 
-        startDateTime.setHours(startHour, startMinute);
-        endDateTime.setHours(endHour, endMinute);
+      startDateTime.setHours(startHour, startMinute);
+      endDateTime.setHours(endHour, endMinute);
 
-        await addUserCalendarEvent(userId, {
-          title: inputName,
-          startTime: startDateTime,
-          endTime: endDateTime,
-        });
+      await addUserCalendarEvent(userId, {
+        title: inputName,
+        startTime: startDateTime,
+        endTime: endDateTime,
+        classCode: classFilter || null,
+      });
 
-        await fetchEvents();
-
-        setInputName("");
-        setStartTime("");
-        setEndTime("");
-        setModalOpen(false);
-      } catch (error) {
-        console.error("Failed to add event:", error);
-      }
+      setInputName("");
+      setStartTime("");
+      setEndTime("");
+      setEventModalOpen(false);
+      fetchEvents();
+    } catch (error) {
+      console.error("Failed to add event:", error);
     }
   };
 
+  const [scrollDeltaX, setScrollDeltaX] = useState(0);
+  let scrollTimeout: NodeJS.Timeout;
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      setScrollDeltaX((prev) => prev + e.deltaX);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        if (scrollDeltaX > 50) handleNextWeek();
+        else if (scrollDeltaX < -50) handlePrevWeek();
+        setScrollDeltaX(0);
+      }, 100);
+    }
+  };
+
+  const handlePrevWeek = () => {
+    const newStart = new Date(currentWeekStart);
+    newStart.setDate(newStart.getDate() - 7);
+    setCurrentWeekStart(newStart);
+  };
+
+  const handleNextWeek = () => {
+    const newStart = new Date(currentWeekStart);
+    newStart.setDate(newStart.getDate() + 7);
+    setCurrentWeekStart(newStart);
+  };
+
+  const todayStr = new Date().toDateString();
+  const navigate = useNavigate();
+
   return (
-    <>
+    <button
+    onClick={(e) => {
+      // Only navigate if the active element is not an input or textarea
+      const tag = document.activeElement?.tagName.toLowerCase();
+      if (tag !== "input" && tag !== "textarea") {
+        navigate("/monthlycalendar");
+      }
+    }}
+    style={{ border: "none", backgroundColor: "white", cursor: "pointer" }}
+  >
       <div
+        onWheel={handleWheel}
         style={{
           backgroundColor: "#E9E8E0",
-          height: "55vh",
+          height: condensed ? "30vh" : "55vh",
           display: "grid",
-          gridTemplateColumns: "repeat(7, 2fr)",
+          gridTemplateColumns: "repeat(7, 1fr)",
           gap: ".25rem",
-          padding: "1rem",
+          padding: condensed ? "0.5rem" : "1rem",
           borderRadius: "25px",
         }}
       >
-        {dates.map((date, i) => (
-          <div
-            key={i}
-            style={{
-              backgroundColor: "#FFFFFF",
-              padding: ".5rem",
-              textAlign: "center",
-              borderRadius: "25px",
-              height: "53vh",
-              width: "12.25vh",
-              display: "flex",
-              flexDirection: "column",
-              fontSize: "1.5rem",
-            }}
-          >
-            <div style={{ marginBottom: "1rem" }}>
-              {date} {days[i]}
-            </div>
+        {weekDates.map((date, i) => {
+          const key = date.toDateString();
+          const isToday = key === todayStr;
+
+          return (
             <div
+              key={i}
               style={{
-                fontSize: "1rem",
-                marginBottom: "auto",
-                textAlign: "left",
+                backgroundColor: isToday ? "#BEB5AA" : "#FFFFFF",
+                padding: ".5rem",
+                textAlign: "center",
+                borderRadius: "25px",
+                height: condensed ? "28vh" : "53vh",
+                display: "flex",
+                flexDirection: "column",
+                fontSize: condensed ? "1rem" : "1.5rem",
+                fontWeight: isToday ? "bold" : "normal",
               }}
             >
-              {events[i].map((event, idx) => (
-                <div key={idx} style={{ marginBottom: "0.5rem" }}>
-                  • {event}
-                </div>
-              ))}
+              <div style={{ marginBottom: "1rem" }}>
+                {date.getDate()}{" "}
+                {date.toLocaleDateString(undefined, { weekday: "short" })}
+              </div>
+              <div
+                style={{
+                  fontSize: "0.9rem",
+                  textAlign: "left",
+                  marginBottom: "auto",
+                }}
+              >
+                {[...(events[key] || [])]
+  .sort((a, b) => a.start.getTime() - b.start.getTime())
+  .map((event, idx) => (
+    <div
+      key={idx}
+      style={{
+        backgroundColor: "#fff",
+        color: "#3c2f2f",
+        padding: "8px 12px",
+        borderRadius: "8px",
+        boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
+        marginBottom: "0.5rem",
+        fontSize: "0.85rem",
+        fontWeight: 400,
+        lineHeight: 1.4,
+      }}
+    >
+      <div style={{ fontWeight: 600 }}>{event.time}</div>
+      <div style={{ fontStyle: "italic" }}>{event.title}</div>
+    </div>
+))}
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEventModalOpen(true);
+                  setSelectedDate(date);
+                  setDateInput(date.toISOString().split("T")[0]);
+                }}
+                style={{
+                  border: "none",
+                  backgroundColor: "transparent",
+                  height: condensed ? "25vh" : "50vh",
+                  cursor: "pointer",
+                }}
+              ></button>
             </div>
-            <button
-              style={{
-                padding: "0.5rem 0.5rem",
-                fontSize: "1rem",
-                borderRadius: "8px",
-                height: "55vh",
-                border: "none",
-                backgroundColor: "white",
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                setModalOpen(true);
-                setCurrentDayIndex(i);
-              }}
-            ></button>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {modalOpen && (
+      {/* Modal remains unchanged */}
+      {eventModalOpen && (
         <div
           style={{
             position: "fixed",
@@ -158,6 +252,7 @@ function Calendar() {
             alignItems: "center",
             justifyContent: "center",
             zIndex: 1000,
+            pointerEvents: "auto",
           }}
         >
           <div
@@ -170,16 +265,9 @@ function Calendar() {
               flexDirection: "column",
               gap: "1rem",
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <h1
-              style={{
-                color: "white",
-                fontSize: "1.25rem",
-                textAlign: "center",
-              }}
-            >
-              ADD EVENT
-            </h1>
+            <h1 style={styles.inputText}>ADD EVENT</h1>
             <input
               type="text"
               placeholder="Event Name"
@@ -187,17 +275,15 @@ function Calendar() {
               onChange={(e) => setInputName(e.target.value)}
               style={styles.input}
             />
-
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <h1 style={styles.inputText}>Date</h1>
               <input
                 type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                value={dateInput}
+                onChange={(e) => setDateInput(e.target.value)}
                 style={styles.input}
               />
             </div>
-
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <h1 style={styles.inputText}>Time</h1>
               <input
@@ -214,20 +300,16 @@ function Calendar() {
                 style={styles.input}
               />
             </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "0.5rem",
-              }}
-            >
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
               <button
-                onClick={() => setModalOpen(false)}
+                onClick={() => setEventModalOpen(false)}
                 style={{
                   padding: "0.5rem 1rem",
                   backgroundColor: "#ccc",
                   border: "none",
                   borderRadius: "5px",
+                  fontSize: "1rem",
+                  cursor: "pointer",
                 }}
               >
                 Cancel
@@ -239,6 +321,8 @@ function Calendar() {
                   backgroundColor: "#BEB5AA",
                   border: "none",
                   borderRadius: "5px",
+                  fontSize: "1rem",
+                  cursor: "pointer",
                 }}
               >
                 Add
@@ -247,11 +331,10 @@ function Calendar() {
           </div>
         </div>
       )}
-    </>
+    </button>
   );
-}
+};
 
-// Utility function to format time nicely
 function formatTime(date: Date) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
@@ -263,11 +346,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "10px",
     backgroundColor: "white",
     border: "none",
+    width: "100%",
+    fontWeight: "lighter",
   },
   inputText: {
     fontSize: "1rem",
     color: "white",
     marginTop: "12px",
+    fontWeight: "lighter",
   },
 };
 
