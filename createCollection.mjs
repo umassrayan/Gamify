@@ -131,9 +131,137 @@
 //       restoreCost: 100
 //     });
 
-//     console.log("🌟 Firestore seeded successfully!");
+//     console.log("Firestore seeded successfully!");
 //   } catch (e) {
-//     console.error("🔥 Error seeding Firestore: ", e);
+//     console.error("Error seeding Firestore: ", e);
+//   }
+// }
+
+// seedFirestore();
+
+// import { initializeApp } from "firebase/app";
+// import {
+//   getFirestore,
+//   collection,
+//   addDoc,
+//   doc,
+//   Timestamp
+// } from "firebase/firestore";
+
+// const firebaseConfig = {
+//   apiKey: "AIzaSyAhAXbtLOmC-fW7u_3Yhux_1yy-OZTJ3Eo",
+//   authDomain: "gamify-cs320.firebaseapp.com",
+//   projectId: "gamify-cs320",
+//   storageBucket: "gamify-cs320.appspot.com",
+//   messagingSenderId: "641481633457",
+//   appId: "1:641481633457:web:48a91983215ec882a5fc90",
+//   measurementId: "G-RT0P353P49"
+// };
+
+// const app = initializeApp(firebaseConfig);
+// const db = getFirestore(app);
+
+// async function seedFirestore() {
+//   try {
+//     // Create user
+//     const userRef = await addDoc(collection(db, "users"), {
+//       name: "John Doe",
+//       email: "john@example.com",
+//       totalPoints: 1200,
+//       currentStreak: 5,
+//       lastAttendanceDateTime: Timestamp.now(),
+//       streakRestoreCount: 1,
+//       settings: {
+//         theme: "dark",
+//         notificationsEnabled: true
+//       }
+//     });
+//     const userId = userRef.id;
+
+//     // Add user dashboard-level assignments
+//     await addDoc(collection(userRef, "assignments"), {
+//       title: "Draft project outline",
+//       description: "Initial plan for app structure",
+//       dueDate: Timestamp.fromDate(new Date("2025-04-23")),
+//       calendarEventId: "event001",
+//       completed: false
+//     });
+
+//     // Add user-level calendar event
+//     await addDoc(collection(userRef, "calendarEvents"), {
+//       title: "Team Brainstorm",
+//       type: "custom",
+//       startTime: Timestamp.fromDate(new Date("2025-04-20T16:00:00")),
+//       endTime: Timestamp.fromDate(new Date("2025-04-20T17:00:00")),
+//       repeat: "none",
+//       colorTag: "green"
+//     });
+
+//     // Create course
+//     const courseRef = await addDoc(collection(db, "courses"), {
+//       title: "Gamified Systems Design",
+//       code: "GAM200",
+//       instructor: "Prof. Jane Smith",
+//       schedule: { tue: "3:00 PM", thu: "3:00 PM" },
+//       location: "Room 201",
+//       studentIds: [userId]
+//     });
+
+//     // Subcollections under course
+//     const courseDocRef = doc(db, "courses", courseRef.id);
+
+//     // Class-specific assignment
+//     await addDoc(collection(courseDocRef, "assignments"), {
+//       title: "Gamification Pitch",
+//       description: "5-minute pitch for your app",
+//       dueDate: Timestamp.fromDate(new Date("2025-04-25")),
+//       calendarEventId: "event002",
+//       points: 50
+//     });
+
+//     // Class-specific focus log
+//     await addDoc(collection(courseDocRef, "focusLogs"), {
+//       userId,
+//       startTime: Timestamp.fromDate(new Date("2025-04-18T14:00:00")),
+//       endTime: Timestamp.fromDate(new Date("2025-04-18T15:00:00")),
+//       duration: 60
+//     });
+
+//     // Class-specific attendance log
+//     await addDoc(collection(courseDocRef, "attendanceLogs"), {
+//       userId,
+//       date: Timestamp.fromDate(new Date("2025-04-18")),
+//       status: "present"
+//     });
+
+//     // Class-specific leaderboard
+//     await addDoc(collection(courseDocRef, "leaderboard"), {
+//       topUsers: [
+//         { userId, points: 1200 },
+//         { userId: "placeholderId", points: 880 }
+//       ],
+//       lastUpdated: Timestamp.now()
+//     });
+
+//     // Class-specific attendance requirement
+//     await addDoc(collection(courseDocRef, "attendanceRequirements"), {
+//       checkInWindow: {
+//         start: Timestamp.fromDate(new Date("2025-04-18T14:45:00")),
+//         end: Timestamp.fromDate(new Date("2025-04-18T15:15:00"))
+//       },
+//       locationRequired: true
+//     });
+
+//     // Global multiplier config
+//     await addDoc(collection(db, "streakMultipliers"), {
+//       baseMultiplier: 1.5,
+//       maxStreakCap: 30,
+//       restoreCost: 100
+//     });
+
+//     console.log("Firestore seeded successfully!");
+//   } catch (e) {
+//     console.error("Error seeding Firestore: ", e);
 //   }
 // }
 
@@ -145,7 +273,8 @@ import {
   collection,
   addDoc,
   doc,
-  Timestamp
+  Timestamp,
+  setDoc
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -161,24 +290,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-async function seedFirestore() {
+async function seedExistingUser() {
   try {
-    // Create user
-    const userRef = await addDoc(collection(db, "users"), {
-      name: "John Doe",
-      email: "john@example.com",
-      totalPoints: 1200,
-      currentStreak: 5,
-      lastAttendanceDateTime: Timestamp.now(),
-      streakRestoreCount: 1,
-      settings: {
-        theme: "dark",
-        notificationsEnabled: true
-      }
-    });
-    const userId = userRef.id;
+    const userId = "hqbb3FUjX6LLjMKAnqb2";
+    const userRef = doc(db, "users", userId);
 
-    // Add user dashboard-level assignments
+    // Add user-level assignments
     await addDoc(collection(userRef, "assignments"), {
       title: "Draft project outline",
       description: "Initial plan for app structure",
@@ -197,73 +314,27 @@ async function seedFirestore() {
       colorTag: "green"
     });
 
-    // Create course
-    const courseRef = await addDoc(collection(db, "courses"), {
-      title: "Gamified Systems Design",
-      code: "GAM200",
-      instructor: "Prof. Jane Smith",
-      schedule: { tue: "3:00 PM", thu: "3:00 PM" },
-      location: "Room 201",
-      studentIds: [userId]
+    // Add a new course under the user
+    await addDoc(collection(userRef, "courses"), {
+      onboardingComplete: true,
+      classes: [
+        {
+          class_code: "COMPSCI320",
+          name: "Introduction to Programming",
+          location: "Computer Science Building, UMass Amherst"
+        },
+        {
+          name: "Linear Algebra",
+          location: "Lederle Graduate Research Center"
+        }
+      ]
     });
 
-    // Subcollections under course
-    const courseDocRef = doc(db, "courses", courseRef.id);
-
-    // Class-specific assignment
-    await addDoc(collection(courseDocRef, "assignments"), {
-      title: "Gamification Pitch",
-      description: "5-minute pitch for your app",
-      dueDate: Timestamp.fromDate(new Date("2025-04-25")),
-      calendarEventId: "event002",
-      points: 50
-    });
-
-    // Class-specific focus log
-    await addDoc(collection(courseDocRef, "focusLogs"), {
-      userId,
-      startTime: Timestamp.fromDate(new Date("2025-04-18T14:00:00")),
-      endTime: Timestamp.fromDate(new Date("2025-04-18T15:00:00")),
-      duration: 60
-    });
-
-    // Class-specific attendance log
-    await addDoc(collection(courseDocRef, "attendanceLogs"), {
-      userId,
-      date: Timestamp.fromDate(new Date("2025-04-18")),
-      status: "present"
-    });
-
-    // Class-specific leaderboard
-    await addDoc(collection(courseDocRef, "leaderboard"), {
-      topUsers: [
-        { userId, points: 1200 },
-        { userId: "placeholderId", points: 880 }
-      ],
-      lastUpdated: Timestamp.now()
-    });
-
-    // Class-specific attendance requirement
-    await addDoc(collection(courseDocRef, "attendanceRequirements"), {
-      checkInWindow: {
-        start: Timestamp.fromDate(new Date("2025-04-18T14:45:00")),
-        end: Timestamp.fromDate(new Date("2025-04-18T15:15:00"))
-      },
-      locationRequired: true
-    });
-
-    // Global multiplier config
-    await addDoc(collection(db, "streakMultipliers"), {
-      baseMultiplier: 1.5,
-      maxStreakCap: 30,
-      restoreCost: 100
-    });
-
-    console.log("🌟 Firestore seeded successfully!");
+    console.log("Existing user updated and course subcollection added!");
   } catch (e) {
-    console.error("🔥 Error seeding Firestore: ", e);
+    console.error("Error updating Firestore: ", e);
   }
 }
 
-seedFirestore();
+seedExistingUser();
 

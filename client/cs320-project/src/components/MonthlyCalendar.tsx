@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { getUserCalendarEvents } from "../api/firestore";
 
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -8,10 +10,11 @@ type Event = {
 };
 
 const MonthlyCalendar: React.FC = () => {
+  const { currentUser } = useAuth();
+  const userId = currentUser?.uid;
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([]);
-  const [activeDay, setActiveDay] = useState<string | null>(null);
-  const [newEventTitle, setNewEventTitle] = useState("");
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -25,8 +28,31 @@ const MonthlyCalendar: React.FC = () => {
   const changeMonth = (offset: number) => {
     const newDate = new Date(year, month + offset, 1);
     setCurrentDate(newDate);
-    setActiveDay(null); // reset popup when changing months
   };
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!userId) return;
+      try {
+        const data = await getUserCalendarEvents(userId);
+        const formatted = data.map((event: any) => {
+          const date = event.startTime.toDate();
+          const dateStr = `${date.getFullYear()}-${String(
+            date.getMonth() + 1
+          ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+          return {
+            date: dateStr,
+            title: event.title,
+          };
+        });
+        setEvents(formatted);
+      } catch (error) {
+        console.error("Error fetching calendar events:", error);
+      }
+    };
+
+    fetchEvents();
+  }, [currentDate, userId]);
 
   const datesArray = Array.from({ length: startingDay + daysInMonth }, (_, i) =>
     i < startingDay ? null : i - startingDay + 1
@@ -41,14 +67,6 @@ const MonthlyCalendar: React.FC = () => {
   const getEventsForDay = (day: number) => {
     const dateStr = getDateString(day);
     return events.filter((e) => e.date === dateStr);
-  };
-
-  const handleAddEvent = () => {
-    if (newEventTitle && activeDay) {
-      setEvents((prev) => [...prev, { date: activeDay, title: newEventTitle }]);
-      setNewEventTitle("");
-      setActiveDay(null);
-    }
   };
 
   return (
@@ -111,7 +129,6 @@ const MonthlyCalendar: React.FC = () => {
           return (
             <div
               key={index}
-              onClick={() => day && setActiveDay(dateStr)}
               style={{
                 height: "65px",
                 padding: "4px",
@@ -129,7 +146,7 @@ const MonthlyCalendar: React.FC = () => {
                 alignItems: "flex-start",
                 justifyContent: "flex-start",
                 fontSize: "0.9rem",
-                cursor: day ? "pointer" : "default",
+                cursor: day ? "default" : "default",
               }}
             >
               <div style={{ marginBottom: "2px" }}>{day}</div>
@@ -156,58 +173,9 @@ const MonthlyCalendar: React.FC = () => {
           );
         })}
       </div>
-
-      {/* Add event form */}
-      {activeDay && (
-        <div
-          style={{
-            marginTop: "1rem",
-            backgroundColor: "#fff",
-            padding: "1rem",
-            border: "1px solid #ccc",
-            borderRadius: "8px",
-          }}
-        >
-          <h4>Add Event for {activeDay}</h4>
-          <input
-            type="text"
-            value={newEventTitle}
-            onChange={(e) => setNewEventTitle(e.target.value)}
-            placeholder="Event title"
-            style={{ padding: "0.5rem", width: "100%", marginBottom: "0.5rem" }}
-          />
-          <div>
-            <button
-              onClick={handleAddEvent}
-              style={{
-                padding: "0.5rem 1rem",
-                marginRight: "1rem",
-                backgroundColor: "#6D5A4F",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-              }}
-            >
-              Add
-            </button>
-            <button
-              onClick={() => setActiveDay(null)}
-              style={{
-                padding: "0.5rem 1rem",
-                backgroundColor: "#ccc",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
 export default MonthlyCalendar;
+

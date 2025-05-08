@@ -4,23 +4,24 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import {
   getUserAssignments,
   updateAssignmentCompletedStatus,
-} from "../api/firestore"; // Import Firestore functions
+} from "../api/firestore";
+import { useAuth } from "../context/AuthContext";
+import { getFirestore, collection, addDoc, Timestamp, getDocs } from "firebase/firestore";
 
-// Defines the structure of an assignment
 export interface AssignmentType {
-  id: string; // Firestore document ID is a string
+  id: string;
   title: string;
   description: string;
-  dueDate: string; // Formatted date string
+  dueDate: string;
   completed: boolean;
 }
 
 const AssignmentBoard: React.FC = () => {
-  const userId = "hqbb3FUjX6LLjMKAnqb2"; // Hardcoded for now
+  const { currentUser } = useAuth();
+  const userId = currentUser?.uid;
   const [assignments, setAssignments] = useState<AssignmentType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // New state for form visibility and new assignment data
   const [showForm, setShowForm] = useState(false);
   const [newAssignment, setNewAssignment] = useState({
     className: "",
@@ -28,15 +29,18 @@ const AssignmentBoard: React.FC = () => {
     day: "",
   });
 
+  const [userCourses, setUserCourses] = useState<{ name: string; class_code?: string }[]>([]);
+
   useEffect(() => {
     async function fetchAssignments() {
+      if (!userId) return;
       try {
         const data = await getUserAssignments(userId);
         const formattedAssignments = data.map((assignment: any) => ({
           id: assignment.id,
           title: assignment.title,
           description: assignment.description,
-          dueDate: assignment.dueDate.toDate().toISOString().split("T")[0], // Format Firestore Timestamp
+          dueDate: assignment.dueDate.toDate().toISOString().split("T")[0],
           completed: assignment.completed,
         }));
         setAssignments(formattedAssignments);
@@ -45,74 +49,118 @@ const AssignmentBoard: React.FC = () => {
         console.error("Error fetching assignments:", error);
       }
     }
-    fetchAssignments();
-  }, []);
 
-  // Toggle the "completed" status of an assignment and sync to Firestore
+    fetchAssignments();
+  }, [userId]);
+
+  useEffect(() => {
+    const fetchUserCourses = async () => {
+      if (!userId) return;
+      const db = getFirestore();
+      const coursesRef = collection(db, "users", userId, "courses");
+      const courseSnapshots = await getDocs(coursesRef);
+
+      const loaded: { name: string; class_code?: string }[] = [];
+
+      courseSnapshots.forEach((doc) => {
+        const data = doc.data();
+        if (Array.isArray(data.classes)) {
+          data.classes.forEach((c: any) => {
+            if (c.name) loaded.push(c);
+          });
+        }
+      });
+
+      setUserCourses(loaded);
+    };
+
+    fetchUserCourses();
+  }, [userId]);
+
   const handleToggleCompleted = async (id: string) => {
+    if (!userId) return;
     try {
       const assignment = assignments.find((a) => a.id === id);
       if (!assignment) return;
 
       const newCompletedStatus = !assignment.completed;
 
-      // Update frontend immediately
       setAssignments((prev) =>
         prev.map((a) =>
           a.id === id ? { ...a, completed: newCompletedStatus } : a
         )
       );
 
-      // Update Firestore
       await updateAssignmentCompletedStatus(userId, id, newCompletedStatus);
     } catch (error) {
       console.error("Failed to update assignment in Firestore:", error);
     }
   };
 
-  // Delete an assignment locally (does not delete in Firestore yet)
   const handleDeleteAssignment = (id: string) => {
     setAssignments((prev) => prev.filter((a) => a.id !== id));
   };
 
-  // Adds a new assignment to the list if all fields are filled in
-  const handleAddAssignment = (e: React.FormEvent) => {
+  // const handleAddAssignment = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (newAssignment.className && newAssignment.name && newAssignment.day) {
+  //     setAssignments((prev) => [
+  //       ...prev,
+  //       {
+  //         id: Date.now().toString(),
+  //         title: newAssignment.name,
+  //         description: newAssignment.className,
+  //         dueDate: newAssignment.day,
+  //         completed: false,
+  //       },
+  //     ]);
+  //     setNewAssignment({ className: "", name: "", day: "" });
+  //     setShowForm(false);
+  //   }
+  // };
+
+  const handleAddAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newAssignment.className && newAssignment.name && newAssignment.day) {
-      setAssignments((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(), // Convert to string for Firestore compatibility
-          title: newAssignment.name,
-          description: newAssignment.className,
-          dueDate: newAssignment.day,
-          completed: false,
-        },
-      ]);
+    if (!newAssignment.className || !newAssignment.name || !newAssignment.day || !userId) return;
+  
+    const db = getFirestore();
+  
+    try {
+      // 1. Write to Firestore
+      await addDoc(collection(db, "users", userId, "assignments"), {
+        class: newAssignment.className,
+        title: newAssignment.name,
+        dueDate: Timestamp.fromDate(new Date(newAssignment.day)),
+        completed: false,
+      });
+  
+      // 2. Refresh from Firestore
+      const snapshot = await getDocs(collection(db, "users", userId, "assignments"));
+      const updatedAssignments = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          title: data.title,
+          description: data.class,
+          dueDate: data.dueDate.toDate().toISOString().split("T")[0],
+          completed: data.completed,
+        };
+      });
+  
+      setAssignments(updatedAssignments);
       setNewAssignment({ className: "", name: "", day: "" });
       setShowForm(false);
+    } catch (error) {
+      console.error("Error adding assignment to Firestore:", error);
     }
   };
+  
 
   if (loading) return <div>Loading assignments...</div>;
 
   return (
-    <div
-      style={{
-        backgroundColor: "#f4f1ee",
-        borderRadius: "8px",
-        padding: "10px",
-        position: "relative",
-        height: "32vh",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end", // Right-align the button
-          marginBottom: "10px",
-        }}
-      >
+    <div style={boardStyle}>
+      <div style={headerStyle}>
         <button onClick={() => setShowForm(true)} style={addButtonStyle}>
           +
         </button>
@@ -122,13 +170,8 @@ const AssignmentBoard: React.FC = () => {
         <div style={modalOverlayStyle}>
           <div style={modalStyle}>
             <h3 style={{ marginTop: 0 }}>Add Assignment</h3>
-            <form
-              onSubmit={handleAddAssignment}
-              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-            >
-              <input
-                type="text"
-                placeholder="Class"
+            <form onSubmit={handleAddAssignment} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <select
                 value={newAssignment.className}
                 onChange={(e) =>
                   setNewAssignment({
@@ -136,7 +179,14 @@ const AssignmentBoard: React.FC = () => {
                     className: e.target.value,
                   })
                 }
-              />
+              >
+                <option value="">Select a class</option>
+                {userCourses.map((course, idx) => (
+                  <option key={idx} value={course.class_code || course.name}>
+                    {course.class_code || course.name}
+                  </option>
+                ))}
+              </select>
               <input
                 type="text"
                 placeholder="Assignment"
@@ -152,18 +202,8 @@ const AssignmentBoard: React.FC = () => {
                   setNewAssignment({ ...newAssignment, day: e.target.value })
                 }
               />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: "10px",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  style={cancelButtonStyle}
-                >
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                <button type="button" onClick={() => setShowForm(false)} style={cancelButtonStyle}>
                   Cancel
                 </button>
                 <button type="submit" style={addButtonStyle}>
@@ -175,17 +215,8 @@ const AssignmentBoard: React.FC = () => {
         </div>
       )}
 
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          backgroundColor: "#fff",
-          border: "none",
-          borderRadius: "4px",
-          overflow: "hidden",
-        }}
-      >
-        <thead style={{ backgroundColor: "#d6cfc7" }}>
+      <table style={tableStyle}>
+        <thead style={theadStyle}>
           <tr>
             <th style={thStyle}>Title</th>
             <th style={thStyle}>Description</th>
@@ -200,9 +231,7 @@ const AssignmentBoard: React.FC = () => {
               if (a.completed !== b.completed) {
                 return a.completed ? 1 : -1;
               }
-              return (
-                new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-              );
+              return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
             })
             .map((assignment) => (
               <tr
@@ -239,32 +268,21 @@ const AssignmentBoard: React.FC = () => {
   );
 };
 
-// Table header styles
-const thStyle: React.CSSProperties = {
-  padding: "12px",
-  color: "#3c2f2f",
-  fontWeight: "bold",
-  textAlign: "left",
-  borderBottom: "1px solid #b0a9a1",
-};
-
-// Table data cell styles
-const tdStyle: React.CSSProperties = {
+// 🎨 Styles
+const boardStyle: React.CSSProperties = {
+  backgroundColor: "#f4f1ee",
+  borderRadius: "8px",
   padding: "10px",
-  borderBottom: "1px solid #ddd",
-  color: "#4a403a",
+  position: "relative",
+  height: "32vh",
 };
 
-// Trash button style
-const trashButtonStyle: React.CSSProperties = {
-  background: "none",
-  border: "none",
-  color: "#8b5e3c",
-  cursor: "pointer",
-  fontSize: "16px",
+const headerStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "flex-end",
+  marginBottom: "10px",
 };
 
-// Modal styles
 const modalOverlayStyle: React.CSSProperties = {
   position: "fixed",
   top: 0,
@@ -301,6 +319,41 @@ const addButtonStyle: React.CSSProperties = {
   padding: "6px 12px",
   borderRadius: "4px",
   cursor: "pointer",
+};
+
+const tableStyle: React.CSSProperties = {
+  width: "100%",
+  borderCollapse: "collapse",
+  backgroundColor: "#fff",
+  border: "none",
+  borderRadius: "4px",
+  overflow: "hidden",
+};
+
+const theadStyle: React.CSSProperties = {
+  backgroundColor: "#d6cfc7",
+};
+
+const thStyle: React.CSSProperties = {
+  padding: "12px",
+  color: "#3c2f2f",
+  fontWeight: "bold",
+  textAlign: "left",
+  borderBottom: "1px solid #b0a9a1",
+};
+
+const tdStyle: React.CSSProperties = {
+  padding: "10px",
+  borderBottom: "1px solid #ddd",
+  color: "#4a403a",
+};
+
+const trashButtonStyle: React.CSSProperties = {
+  background: "none",
+  border: "none",
+  color: "#8b5e3c",
+  cursor: "pointer",
+  fontSize: "16px",
 };
 
 export default AssignmentBoard;

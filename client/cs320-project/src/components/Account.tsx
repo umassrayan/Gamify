@@ -1,28 +1,31 @@
 import { useEffect, useState } from "react";
 import { getUserProfile } from "../api/firestore";
-
-const userId = "hqbb3FUjX6LLjMKAnqb2"; // Hardcoded for now
+import { useAuth } from "../context/AuthContext";
 
 type AccountProps = {
   onClick: () => void;
 };
 
 const Account: React.FC<AccountProps> = ({ onClick }) => {
+  const { currentUser, loading } = useAuth();
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     async function fetchProfile() {
+      if (!currentUser) return;
       try {
-        const data = await getUserProfile(userId);
+        const data = await getUserProfile(currentUser.uid);
         setProfile(data);
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching user profile:", error);
       }
     }
-    fetchProfile();
-  }, []);
 
-  if (!profile) return <div>Loading...</div>;
+    fetchProfile();
+  }, [currentUser]);
+
+  if (loading || !currentUser) return null;
+  if (!profile) return <div style={{ marginLeft: "25px" }}>Loading...</div>;
 
   return (
     <button
@@ -41,9 +44,10 @@ const Account: React.FC<AccountProps> = ({ onClick }) => {
         fontSize: "40px",
       }}
     >
-      {profile.name ? profile.name.charAt(0).toUpperCase() : "B"}
+      {profile.name ? profile.name.charAt(0).toUpperCase() : "?"}
     </button>
   );
 };
 
 export default Account;
+
