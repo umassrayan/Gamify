@@ -1,186 +1,174 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import LocationChecker from './LocationChecker'; // Assuming LocationChecker.tsx is in the same folder
-import './App.css'; //
+// src/App.tsx (Test Harness)
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useParams, Navigate } from 'react-router-dom';
+import ClassAttendanceModule, { ClassDetails } from './ClassAttendanceModule'; // Import ClassDetails type
+import './App.css';
+// import './firebaseConfig'; // Firebase init can be optional
 
-// Define types for location coordinates
-interface LatLngLiteral {
-    lat: number;
-    lng: number;
+// --- Sample Class IDs (for Firestore testing) ---
+const SAMPLE_CLASS_ID_1 = 'math101';
+const SAMPLE_CLASS_ID_2 = 'physicsLabA';
+
+// --- Collection of Dummy Class Data ---
+interface DummyClassCollection {
+    [key: string]: ClassDetails; // Use a string key like "set1", "set2" or a descriptive ID
 }
 
-function App() {
-    // --- State Declarations ---
-    const [userLocation, setUserLocation] = useState<LatLngLiteral | null>(null);
-    const [isWithinRadius, setIsWithinRadius] = useState<boolean>(false);
-    const [locationError, setLocationError] = useState<string | null>(null);
-    const [loadingLocation, setLoadingLocation] = useState<boolean>(true); // Track loading state
+const allDummyClasses: DummyClassCollection = {
+    cs101: {
+        // Key used in the URL, e.g., /dummy-class/cs101
+        id: 'DUMMY_CS101',
+        className: 'Intro to CS (Dummy Set 1)',
+        address: '140 Governors Dr, Amherst, MA 01003', // UMass CS Building area
+        radius: 75,
+    },
+    art202: {
+        // Key for the second dummy class
+        id: 'DUMMY_ART202',
+        className: 'Art History (Dummy Set 2)',
+        address: 'lederle graduate research tower', // Mead Art Museum
+        radius: 75,
+    },
+    libraryStudy: {
+        id: 'DUMMY_LIB001',
+        className: 'Library Study Group (Dummy Set 3)',
+        address: 'worcester dining commons', // UMass Library
+        radius: 75,
+    },
+    // Add more dummy class sets here with unique keys
+};
 
-    // --- Configuration ---
-    const targetAddress = '740 N Pleasant St, Amherst, MA 01003'; // Example Address
-    const radiusInMeters = 100; // Example Radius
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY; // For Vite
+const dummyUserForTesting = 'testDummyUser456'; // Or make this selectable too if needed
 
-    // --- Location Fetching Function ---
-    // Encapsulates the logic to get the current position
-    const fetchUserLocation = useCallback(() => {
-        if (!apiKey) {
-            setLoadingLocation(false);
-            setLocationError('Google Maps API key is missing.');
-            setUserLocation(null);
-            setIsWithinRadius(false);
-            return;
-        }
+// Component for Firestore-backed Class Module
+const FirestoreClassPage: React.FC = () => {
+    const { classIdParam } = useParams<{ classIdParam: string }>();
+    const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-        if (!navigator.geolocation) {
-            setLocationError('Geolocation is not supported by your browser.');
-            setLoadingLocation(false);
-            setUserLocation(null);
-            setIsWithinRadius(false);
-            return;
-        }
+    if (!googleMapsApiKey) {
+        return <div className="error-message">Error: Google Maps API Key (VITE_GOOGLE_MAPS_API_KEY) is missing.</div>;
+    }
+    if (!classIdParam) return <Navigate to="/" replace />;
 
-        setLoadingLocation(true); // Indicate loading starts/restarts
-        setLocationError(null); // Reset previous errors
-
-        const successCallback = (position: GeolocationPosition) => {
-            console.log('Location Fetched:', position.coords);
-            setUserLocation({
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-            });
-            setLocationError(null);
-            setLoadingLocation(false);
-        };
-
-        const errorCallback = (error: GeolocationPositionError) => {
-            console.error('Error getting user location:', error);
-            let errorMessage = 'Failed to retrieve location.';
-            switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    errorMessage = 'Location permission denied. Please enable location services.';
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    errorMessage = 'Location information is currently unavailable.';
-                    break;
-                case error.TIMEOUT:
-                    errorMessage = 'The request to get user location timed out.';
-                    break;
-                default:
-                    errorMessage = `An unknown error occurred (Code: ${error.code}).`;
-                    break;
-            }
-            setLocationError(errorMessage);
-            // Keep previous location if available, or set to null if none was ever found
-            // setUserLocation(null); // Optionally clear location on error
-            setIsWithinRadius(false); // Assume outside if location fails
-            setLoadingLocation(false); // Stop loading indicator on error
-        };
-
-        // --- Use getCurrentPosition (called once per fetch) ---
-        navigator.geolocation.getCurrentPosition(successCallback, errorCallback, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0, // Don't use a cached position for refresh
-        });
-    }, [apiKey]); // Dependency on apiKey
-
-    // --- Initial Load Effect ---
-    // Fetch location once when the component mounts
-    useEffect(() => {
-        fetchUserLocation();
-    }, [fetchUserLocation]); // Run when fetchUserLocation function is stable
-
-    // --- Proximity Change Handler ---
-    // Callback function for LocationChecker to update proximity status
-    const handleProximityChange = useCallback(
-        (isWithin: boolean) => {
-            if (isWithin !== isWithinRadius) {
-                setIsWithinRadius(isWithin);
-            }
-        },
-        [isWithinRadius],
+    return (
+        <div className="page-container">
+            <h2>Firestore-Backed Class: {classIdParam}</h2>
+            <p>
+                This page uses <code>ClassAttendanceModule</code> with Firebase.
+            </p>
+            <ClassAttendanceModule classId={classIdParam} googleMapsApiKey={googleMapsApiKey} userId={dummyUserForTesting} />
+        </div>
     );
+};
 
-    // --- Conditional Return for Missing API Key ---
-    if (!apiKey) {
+// Modified Component for Dummy Data Class Module
+const DummyDataClassPage: React.FC = () => {
+    const { dummyKey } = useParams<{ dummyKey: string }>(); // Get the key from URL
+    const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+    if (!googleMapsApiKey) {
+        return <div className="error-message">Error: Google Maps API Key (VITE_GOOGLE_MAPS_API_KEY) is missing.</div>;
+    }
+
+    const selectedDummyData = dummyKey ? allDummyClasses[dummyKey] : null;
+
+    if (!selectedDummyData) {
         return (
-            <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>
-                <h2>Configuration Error</h2>
-                <p>Google Maps API key is missing.</p>
+            <div className="page-container error-message">
+                <h2>Dummy Data Class Not Found</h2>
                 <p>
-                    Please create a <code>.env</code> file and add <code>VITE_GOOGLE_MAPS_API_KEY=YOUR_KEY</code>.
+                    No dummy data found for key: {dummyKey}. Check your <code>allDummyClasses</code> definition and URL.
                 </p>
+                <Link to="/">Go to Home</Link>
             </div>
         );
     }
 
-    // --- Event Handlers & Derived State ---
-    // Handler for the proximity-based action button
-    const handleActionButtonClick = () => {
-        if (isWithinRadius) {
-            console.log('Action Button clicked! User is within radius.');
-            alert('Action performed: User is within the designated area!');
-        }
-    };
-
-    // Handler for the new Refresh button
-    const handleRefreshLocation = () => {
-        console.log('Refresh button clicked - fetching location...');
-        fetchUserLocation(); // Call the function to get location again
-    };
-
-    // Determine Action button disabled state
-    const isActionButtonDisabled = loadingLocation || !!locationError || !isWithinRadius;
-
-    // --- Render Logic ---
     return (
-        <div className="App">
-            <h1>Location Proximity Checker</h1>
+        <div className="page-container">
+            <h2>Dummy Data Class: {selectedDummyData.className}</h2>
             <p>
-                Checking if you are within {radiusInMeters} meters of: <br />
-                <strong>{targetAddress}</strong>
+                This page uses <code>ClassAttendanceModule</code> with hardcoded data (no Firebase calls) for set: <strong>{dummyKey}</strong>.
             </p>
-
-            {/* Refresh Button */}
-            <div style={{ marginBottom: '15px' }}>
-                <button onClick={handleRefreshLocation} disabled={loadingLocation}>
-                    {loadingLocation ? 'Refreshing...' : 'Refresh Location'}
-                </button>
-            </div>
-
-            {/* Status Messages */}
-            {loadingLocation && <p>Getting location...</p>}
-            {locationError && <p style={{ color: locationError === 'Google Maps API key is missing.' ? 'red' : 'orange' }}>Error: {locationError}</p>}
-            {!loadingLocation && !locationError && userLocation && (
-                <p>
-                    Your current location: Lat: {userLocation.lat.toFixed(4)}, Lng: {userLocation.lng.toFixed(4)}
-                </p>
-            )}
-            {!loadingLocation && !locationError && !userLocation && locationError !== 'Google Maps API key is missing.' && <p>Could not determine your location.</p>}
-            {!loadingLocation && !locationError && (
-                <p style={{ fontWeight: 'bold', color: isWithinRadius ? 'green' : 'red' }}>Status: You are currently {isWithinRadius ? 'INSIDE' : 'OUTSIDE'} the radius.</p>
-            )}
-
-            {/* Render the Map Component */}
-            <LocationChecker
-                apiKey={apiKey}
-                targetAddress={targetAddress}
-                radius={radiusInMeters}
-                userLocation={userLocation} // Pass the current location state
-                onProximityChange={handleProximityChange}
+            <ClassAttendanceModule
+                initialClassDetails={selectedDummyData} // Pass the selected dummy data
+                googleMapsApiKey={googleMapsApiKey}
+                userId={dummyUserForTesting} // You can also make userId part of the dummy set if needed
             />
-
-            {/* Conditional Action Button */}
-            <div style={{ marginTop: '20px' }}>
-                <button
-                    onClick={handleActionButtonClick}
-                    disabled={isActionButtonDisabled}
-                    title={isActionButtonDisabled ? 'You must be within the radius to enable this action' : 'Perform action'}
-                >
-                    Confirm Attendance (Enabled when Inside Radius)
-                </button>
-            </div>
         </div>
+    );
+};
+
+// Main Test Harness App
+const HomePage: React.FC = () => (
+    <div className="page-container">
+        <h1>Class Attendance Module - Test Harness</h1>
+        <p>Select a mode to test the attendance module:</p>
+        <nav>
+            <ul>
+                <li>
+                    <strong>Dummy Data Tests (No Firebase):</strong>
+                    <ul>
+                        {Object.keys(allDummyClasses).map((key) => (
+                            <li key={key}>
+                                <Link to={`/dummy-class/${key}`}>
+                                    Test Dummy: {allDummyClasses[key].className} (Key: {key})
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                    <p className="small-text">Uses hardcoded class name and location based on the selected set.</p>
+                </li>
+                <hr style={{ margin: '15px 0' }} />
+                <li>
+                    <strong>Firestore-Backed Tests:</strong>
+                    <ul>
+                        <li>
+                            <Link to={`/firestore-class/${SAMPLE_CLASS_ID_1}`}>Test Firestore Class: {SAMPLE_CLASS_ID_1}</Link>
+                        </li>
+                        <li>
+                            <Link to={`/firestore-class/${SAMPLE_CLASS_ID_2}`}>Test Firestore Class: {SAMPLE_CLASS_ID_2}</Link>
+                        </li>
+                        <li>
+                            <Link to="/firestore-class/nonExistentClassID">Test Firestore With Non-Existent Class ID</Link>
+                        </li>
+                    </ul>
+                    <p className="small-text">Requires Firebase setup and corresponding documents in Firestore.</p>
+                </li>
+            </ul>
+        </nav>
+        <div style={{ marginTop: '30px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
+            <h4>Setup Reminders:</h4>
+            <ul className="small-text">
+                <li>
+                    Make sure your <code>.env.local</code> file has <code>VITE_Maps_API_KEY="YOUR_KEY"</code>.
+                </li>
+                <li>
+                    For Firestore tests: Ensure <code>src/firebaseConfig.ts</code> has your credentials and sample data exists.
+                </li>
+            </ul>
+        </div>
+    </div>
+);
+
+function App() {
+    // import('./firebaseConfig'); // Uncomment if actively testing Firestore routes
+
+    return (
+        <Router>
+            <div className="App">
+                <header className="App-header">Demo: Location-Based Attendance Module</header>
+                <main className="App-content">
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        {/* Route for different dummy data sets */}
+                        <Route path="/dummy-class/:dummyKey" element={<DummyDataClassPage />} />
+                        <Route path="/firestore-class/:classIdParam" element={<FirestoreClassPage />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </main>
+            </div>
+        </Router>
     );
 }
 

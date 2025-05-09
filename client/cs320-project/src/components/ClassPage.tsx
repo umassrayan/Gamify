@@ -5,6 +5,8 @@ import ProgressBar from "./ProgressBar";
 import Account from "./Account";
 import Calendar from "./Calendar";
 import FocusTimer from "./FocusTimer";
+import { AnimatePresence } from "framer-motion";
+import AccountSettings from "./AccountSettings";
 
 // Utility function to format duration from seconds
 function formatDuration(totalSeconds: number) {
@@ -17,6 +19,7 @@ function formatDuration(totalSeconds: number) {
 const ClassPage: React.FC = () => {
   const { id: classCode } = useParams<{ id: string }>();
   const [weeklySeconds, setWeeklySeconds] = useState(0);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   if (!classCode) {
     return <div>Error: Class not found!</div>;
@@ -27,7 +30,12 @@ const ClassPage: React.FC = () => {
       {/* Sidebar */}
       <div>
         <ProgressBar progress={65} />
-        <Account />
+        <Account onClick={() => setSidebarOpen(true)} />
+        <AnimatePresence>
+          {isSidebarOpen && (
+            <AccountSettings onClose={() => setSidebarOpen(false)} />
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Main content */}
@@ -45,7 +53,10 @@ const ClassPage: React.FC = () => {
         <div style={{ display: "flex", gap: "20px", flexGrow: 1 }}>
           {/* Left: Focus + Time Summary */}
           <div style={{ flex: 2, display: "flex", flexDirection: "column" }}>
-            <FocusTimer classCode={classCode} setWeeklySeconds={setWeeklySeconds} />
+            <FocusTimer
+              classCode={classCode}
+              setWeeklySeconds={setWeeklySeconds}
+            />
             <div style={{ marginTop: "1rem", textAlign: "center" }}>
               {/* <div style={{ fontWeight: "bold" }}>
                 {formatDuration(weeklySeconds)} Focused this week
@@ -64,4 +75,5 @@ const ClassPage: React.FC = () => {
 };
 
 export default ClassPage;
+
 
