@@ -3,11 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
-import {
-  doc,
-  getDoc,
-  setDoc,
-} from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 type Task = {
   title: string;
@@ -22,7 +18,10 @@ const getWeekId = () => {
   const now = new Date();
   const year = now.getFullYear();
   const week = Math.ceil(
-    ((now.getTime() - new Date(year, 0, 1).getTime()) / 86400000 + new Date(year, 0, 1).getDay() + 1) / 7
+    ((now.getTime() - new Date(year, 0, 1).getTime()) / 86400000 +
+      new Date(year, 0, 1).getDay() +
+      1) /
+      7
   );
   return `${year}-W${week}`;
 };
@@ -71,7 +70,9 @@ const ToDo: React.FC<ToDoProps> = ({ day }) => {
   };
 
   const handleCheckTask = (index: number) => {
-    const updated = tasks.map((t, i) => i === index ? { ...t, completed: !t.completed } : t);
+    const updated = tasks.map((t, i) =>
+      i === index ? { ...t, completed: !t.completed } : t
+    );
     setTasks(updated);
     saveTasks(updated);
   };
@@ -93,9 +94,25 @@ const ToDo: React.FC<ToDoProps> = ({ day }) => {
         padding: "1rem",
       }}
     >
-      <h2 style={{ fontFamily: "Arial", marginBottom: "5px", marginLeft: "10px" }}>{day}</h2>
+      <h2
+        style={{
+          fontFamily: "Inter",
+          fontWeight: "lighter",
+          margin: 0,
+          marginLeft: "10px",
+        }}
+      >
+        {day}
+      </h2>
 
-      <div style={{ overflowY: "auto", flexGrow: "1", display: "flex", flexDirection: "column", opacity: ".25" }}>
+      <div
+        style={{
+          overflowY: "auto",
+          flexGrow: "1",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <ul style={{ listStyle: "none", padding: 0, width: "100%" }}>
           <AnimatePresence>
             {tasks.map((task, index) => (
@@ -110,9 +127,10 @@ const ToDo: React.FC<ToDoProps> = ({ day }) => {
                   alignItems: "center",
                   justifyContent: "space-between",
                   marginBottom: "8px",
-                  backgroundColor: "#fff",
+                  backgroundColor: "#c6bdb3",
                   borderRadius: "25px",
                   padding: "10px",
+                  color: task.completed ? "#878787" : "black",
                 }}
               >
                 <span>{task.title}</span>
@@ -120,7 +138,7 @@ const ToDo: React.FC<ToDoProps> = ({ day }) => {
                   type="checkbox"
                   checked={task.completed}
                   onChange={() => handleCheckTask(index)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: "pointer", backgroundColor: "#e2deda" }}
                 />
               </motion.li>
             ))}
@@ -131,22 +149,24 @@ const ToDo: React.FC<ToDoProps> = ({ day }) => {
           type="text"
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
-          placeholder="..."
+          placeholder="New Task"
           onKeyDown={(e) => {
             if (e.key === "Enter") handleAddTask();
           }}
           style={{
             marginTop: "-5px",
+            margin: 0,
             padding: "8px",
             borderRadius: "25px",
             border: "1px solid #ccc",
             flexShrink: 0,
+            fontSize: "1rem",
           }}
         />
       </div>
 
       <button
-        onClick={() => navigate("/", { state: { refresh: true } })}
+        onClick={() => navigate("/dashboard", { state: { refresh: true } })}
         style={{
           marginTop: "10px",
           padding: "10px 20px",
@@ -154,6 +174,7 @@ const ToDo: React.FC<ToDoProps> = ({ day }) => {
           border: "none",
           backgroundColor: "#fff",
           cursor: "pointer",
+          fontSize: "1rem",
         }}
       >
         Back
@@ -163,4 +184,3 @@ const ToDo: React.FC<ToDoProps> = ({ day }) => {
 };
 
 export default ToDo;
-

@@ -2,6 +2,22 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getUserCalendarEvents } from "../api/firestore";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCaretLeft,
+  faCaretRight,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
+
+const MyComponent = () => {
+  return (
+    <div>
+      <FontAwesomeIcon icon={faUser} style={{ marginRight: "8px" }} />
+      Profile
+    </div>
+  );
+};
+
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 type Event = {
@@ -29,6 +45,9 @@ const MonthlyCalendar: React.FC = () => {
     const newDate = new Date(year, month + offset, 1);
     setCurrentDate(newDate);
   };
+
+  const [hoveredLeft, setHoveredLeft] = useState(false);
+  const [hoveredRight, setHoveredRight] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -75,7 +94,7 @@ const MonthlyCalendar: React.FC = () => {
         maxWidth: "100vw",
         height: "100vh",
         padding: "2rem",
-        fontFamily: "Arial, sans-serif",
+        fontFamily: "Inter",
         backgroundColor: "#E9E8E0",
         borderRadius: "25px",
         margin: "2rem",
@@ -86,24 +105,47 @@ const MonthlyCalendar: React.FC = () => {
         style={{
           display: "flex",
           justifyContent: "space-between",
+          marginTop: "-1rem",
           marginBottom: "1rem",
           fontSize: "2rem",
         }}
       >
         <button
+          onMouseEnter={() => setHoveredLeft(true)}
+          onMouseLeave={() => setHoveredLeft(false)}
           onClick={() => changeMonth(-1)}
-          style={{ border: "none", backgroundColor: "transparent" }}
+          style={{
+            marginTop: "2rem",
+            width: "40px",
+            height: "40px",
+            border: "none",
+            borderRadius: "50%",
+            transition: "background-color 0.3s ease",
+            backgroundColor: hoveredLeft ? "#CDC6BD" : "transparent", // light circle on hover
+            cursor: "pointer",
+          }}
         >
-          &lt;
+          <FontAwesomeIcon icon={faCaretLeft} size="2x" />
         </button>
-        <h2>
+        <h2 style={{ fontFamily: "Inter", fontWeight: "lighter" }}>
           {currentDate.toLocaleString("default", { month: "long" })} {year}
         </h2>
         <button
+          onMouseEnter={() => setHoveredRight(true)}
+          onMouseLeave={() => setHoveredRight(false)}
           onClick={() => changeMonth(1)}
-          style={{ border: "none", backgroundColor: "transparent" }}
+          style={{
+            marginTop: "2rem",
+            width: "40px",
+            height: "40px",
+            border: "none",
+            borderRadius: "50%",
+            transition: "background-color 0.3s ease",
+            backgroundColor: hoveredRight ? "#CDC6BD" : "transparent", // light circle on hover
+            cursor: "pointer",
+          }}
         >
-          &gt;
+          <FontAwesomeIcon icon={faCaretRight} size="2x" />
         </button>
       </div>
 
@@ -113,10 +155,12 @@ const MonthlyCalendar: React.FC = () => {
           display: "grid",
           gridTemplateColumns: "repeat(7, 1fr)",
           textAlign: "center",
+          marginTop: "-20px",
+          marginBottom: "20px",
         }}
       >
         {daysOfWeek.map((day) => (
-          <div key={day} style={{ paddingBottom: "0.5rem" }}>
+          <div key={day} style={{ paddingBottom: "1rem" }}>
             {day}
           </div>
         ))}
@@ -131,14 +175,10 @@ const MonthlyCalendar: React.FC = () => {
             <div
               key={index}
               style={{
-                height: "65px",
-                padding: "4px",
-                backgroundColor: day
-                  ? isToday
-                    ? "#BEB5AA"
-                    : "white"
-                  : "transparent",
-                borderRadius: "6px",
+                height: "110px",
+                padding: "10px", //for the day numbers
+                backgroundColor: day ? "white" : "transparent",
+                borderRadius: "10px",
                 margin: "2px",
                 border: "none",
                 fontWeight: isToday ? "normal" : "lighter",
@@ -150,13 +190,28 @@ const MonthlyCalendar: React.FC = () => {
                 cursor: day ? "default" : "default",
               }}
             >
-              <div style={{ marginBottom: "2px" }}>{day}</div>
+              <div
+                style={{
+                  marginBottom: "4px",
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: isToday ? "bold" : "normal",
+                  border: "none",
+                  backgroundColor: isToday ? "#BEB5AA" : "transparent",
+                }}
+              >
+                {day}
+              </div>
               {dayEvents.map((event, i) => (
                 <div
                   key={i}
                   style={{
                     fontSize: "0.65rem",
-                    backgroundColor: "#6D5A4F",
+                    backgroundColor: "#bbb",
                     color: "white",
                     borderRadius: "4px",
                     padding: "2px 4px",
