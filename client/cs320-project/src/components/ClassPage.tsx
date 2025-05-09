@@ -8,12 +8,14 @@ import FocusTimer from "./FocusTimer";
 import Leaderboard from "./Leaderboard";
 import { AnimatePresence } from "framer-motion";
 import AccountSettings from "./AccountSettings";
-
+import WeeklyAgenda from "./WeeklyAgenda";
+import ToDo from "./ToDo";
 
 const ClassPage: React.FC = () => {
   const { id: classCode } = useParams<{ id: string }>();
   const [weeklySeconds, setWeeklySeconds] = useState(0);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const { day } = useParams(); // read day from URL (like /todo/Monday)
 
   if (!classCode) {
     return <div>Error: Class not found!</div>;
@@ -35,30 +37,24 @@ const ClassPage: React.FC = () => {
       {/* Main content */}
       <div
         style={{
-          flex: 1,
           padding: "15px",
-          display: "flex",
-          flexDirection: "column",
+          display: "grid",
           gap: "20px",
+          marginLeft: "-15px",
         }}
       >
-        {/* Calendar */}
-        <Calendar classFilter={undefined} />
-
-        {/* Focus + Leaderboard + ClassBoard */}
-        <div style={{ display: "flex", gap: "20px", flexGrow: 1 }}>
-          {/* Left: Focus Timer + Leaderboard side-by-side */}
-          <div style={{ flex: 2, display: "flex", gap: "20px" }}>
-            <div style={{ flex: 1 }}>
-              <FocusTimer classCode={classCode} setWeeklySeconds={setWeeklySeconds} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <Leaderboard classCode={classCode} />
-            </div>
+        <div style={{ display: "flex", marginTop: "10px" }}>
+          <FocusTimer
+            classCode={classCode}
+            setWeeklySeconds={setWeeklySeconds}
+          />
+          {day ? <ToDo day={day} /> : <WeeklyAgenda />}
+        </div>
+        <div style={{ display: "flex", gap: "20px" }}>
+          <div style={{ flex: 2, display: "flex", flexDirection: "column" }}>
+            <Leaderboard />
           </div>
-
-          {/* Right: Class Board */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "20px" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <ClassBoard />
           </div>
         </div>
@@ -68,4 +64,3 @@ const ClassPage: React.FC = () => {
 };
 
 export default ClassPage;
-

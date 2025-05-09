@@ -46,7 +46,7 @@ const ClassBoard: React.FC = () => {
 
   const handleClassClick = (code: string) => {
     if (currentClassCode === code) {
-      navigate("/"); // Already selected → go home
+      navigate("/dashboard"); // Already selected → go home
     } else {
       navigate(`/class/${code}`);
     }
@@ -55,47 +55,62 @@ const ClassBoard: React.FC = () => {
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(2, 1fr)",
-        gap: "20px",
-        padding: "20px",
-        backgroundColor: "#f4f1ee",
-        borderRadius: "8px",
-        height: "30vh",
+        maxHeight: "34vh", // fixed height for scroll area
+        overflowY: "auto", // enables vertical scrolling
       }}
     >
-      {classes.map((classItem, idx) => (
-        <div
-          key={idx}
-          onClick={() => handleClassClick(classItem.class_code || classItem.name)}
-          style={{
-            backgroundColor:
-              currentClassCode === (classItem.class_code || classItem.name)
-                ? "#3c2f2f"
-                : "#f4f1ee",
-            padding: "20px",
-            borderRadius: "8px",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-            cursor: "pointer",
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            color:
-              currentClassCode === (classItem.class_code || classItem.name)
-                ? "#fff"
-                : "#3c2f2f",
-          }}
-        >
-          <div style={{ fontWeight: "bold", fontSize: "18px" }}>
-            {classItem.class_code || classItem.name}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: "20px",
+          padding: "20px",
+          backgroundColor: "#E0E0E0",
+          borderRadius: "20px",
+          height: "47vh",
+        }}
+      >
+        {classes.map((classItem, idx) => (
+          <div
+            key={idx}
+            onClick={() =>
+              handleClassClick(classItem.class_code || classItem.name)
+            }
+            style={{
+              backgroundColor:
+                currentClassCode === (classItem.class_code || classItem.name)
+                  ? "#ccc"
+                  : "#E9E9E9",
+              height: "120px",
+              padding: "5px",
+              borderRadius: "30px",
+              // boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+              cursor: "pointer",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              color:
+                currentClassCode === (classItem.class_code || classItem.name)
+                  ? "#fff"
+                  : "#3c2f2f",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "Inter",
+                fontWeight: "lighter",
+                fontSize: "25px",
+              }}
+            >
+              {classItem.class_code || classItem.name}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
 
 export default ClassBoard;
-
