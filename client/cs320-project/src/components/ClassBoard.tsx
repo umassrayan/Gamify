@@ -55,19 +55,20 @@ const ClassBoard: React.FC = () => {
   return (
     <div
       style={{
-        maxHeight: "34vh", // fixed height for scroll area
-        overflowY: "auto", // enables vertical scrolling
+        backgroundColor: "#E0E0E0", // Background on outer wrapper
+        borderRadius: "20px", // Rounded corners for background
+        padding: "20px", // Padding inside the background
+        height: "34vh", // Fixed visible height
+        overflowY: classes.length > 4 ? "auto" : "hidden", // Scroll if needed
+        boxSizing: "border-box",
       }}
     >
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, 1fr)",
-          gap: "20px",
-          padding: "20px",
-          backgroundColor: "#E0E0E0",
-          borderRadius: "20px",
-          height: "47vh",
+          rowGap: "15px", // Adjust for tighter vertical spacing
+          columnGap: "16px",
         }}
       >
         {classes.map((classItem, idx) => (
@@ -81,10 +82,8 @@ const ClassBoard: React.FC = () => {
                 currentClassCode === (classItem.class_code || classItem.name)
                   ? "#ccc"
                   : "#E9E9E9",
-              height: "120px",
-              padding: "5px",
+              height: "135px",
               borderRadius: "30px",
-              // boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
               cursor: "pointer",
               textAlign: "center",
               display: "flex",
