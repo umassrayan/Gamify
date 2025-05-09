@@ -38,7 +38,7 @@ const SignIn: React.FC = () => {
 
       // AuthProvider handles state change, navigate to root for dashboard
       console.log("Navigating to root route for dashboard...");
-      navigate("/"); // *** Corrected navigation target ***
+      navigate("/dashboard"); // *** Corrected navigation target ***
 
       // No need to setIsLoading(false) on success due to navigation
     } catch (err) {

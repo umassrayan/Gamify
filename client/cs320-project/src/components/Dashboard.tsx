@@ -33,7 +33,7 @@ function Main() {
     >
       <div>
         {/* Left Column */}
-        <ProgressBar progress={65} />
+        <ProgressBar progress={97} />
         <Account onClick={() => setSidebarOpen(true)} />
         <AnimatePresence>
           {isSidebarOpen && (

@@ -201,19 +201,22 @@ const Calendar: React.FC<CalendarProps> = ({ classFilter, condensed }) => {
                     <div
                       key={idx}
                       style={{
-                        backgroundColor: "#fff",
+                        backgroundColor: "#ccc",
                         color: "#3c2f2f",
                         padding: "8px 12px",
                         borderRadius: "8px",
-                        boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
-                        marginBottom: "0.5rem",
-                        fontSize: "0.85rem",
+                        // boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
+                        marginBottom: "0.25rem",
+                        // marginLeft: "0.1rem",
+                        fontSize: "0.5rem",
                         fontWeight: 400,
                         lineHeight: 1.4,
                       }}
                     >
                       <div style={{ fontWeight: 600 }}>{event.time}</div>
-                      <div style={{ fontStyle: "italic" }}>{event.title}</div>
+                      <div style={{ fontStyle: "italic", fontSize: ".8rem" }}>
+                        {event.title}
+                      </div>
                     </div>
                   ))}
               </div>
