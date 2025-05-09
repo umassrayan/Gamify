@@ -20,20 +20,17 @@ const allDummyClasses: DummyClassCollection = {
         id: 'DUMMY_CS101',
         className: 'Intro to CS (Dummy Set 1)',
         address: '140 Governors Dr, Amherst, MA 01003', // UMass CS Building area
-        radius: 75,
     },
     art202: {
         // Key for the second dummy class
         id: 'DUMMY_ART202',
         className: 'Art History (Dummy Set 2)',
         address: 'lederle graduate research tower', // Mead Art Museum
-        radius: 75,
     },
     libraryStudy: {
         id: 'DUMMY_LIB001',
         className: 'Library Study Group (Dummy Set 3)',
         address: 'worcester dining commons', // UMass Library
-        radius: 75,
     },
     // Add more dummy class sets here with unique keys
 };
