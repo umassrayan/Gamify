@@ -87,6 +87,7 @@ const MonthlyCalendar: React.FC = () => {
           display: "flex",
           justifyContent: "space-between",
           marginBottom: "1rem",
+          fontSize: "2rem",
         }}
       >
         <button
@@ -178,4 +179,3 @@ const MonthlyCalendar: React.FC = () => {
 };
 
 export default MonthlyCalendar;
-

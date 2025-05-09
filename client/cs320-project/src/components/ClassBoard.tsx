@@ -46,7 +46,7 @@ const ClassBoard: React.FC = () => {
 
   const handleClassClick = (code: string) => {
     if (currentClassCode === code) {
-      navigate("/"); // Already selected → go home
+      navigate("/dashboard"); // Already selected → go home
     } else {
       navigate(`/class/${code}`);
     }
@@ -67,7 +67,9 @@ const ClassBoard: React.FC = () => {
       {classes.map((classItem, idx) => (
         <div
           key={idx}
-          onClick={() => handleClassClick(classItem.class_code || classItem.name)}
+          onClick={() =>
+            handleClassClick(classItem.class_code || classItem.name)
+          }
           style={{
             backgroundColor:
               currentClassCode === (classItem.class_code || classItem.name)
@@ -98,4 +100,3 @@ const ClassBoard: React.FC = () => {
 };
 
 export default ClassBoard;
-

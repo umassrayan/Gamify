@@ -86,7 +86,8 @@ const Calendar: React.FC<CalendarProps> = ({ classFilter, condensed }) => {
   };
 
   const handleAddEvent = async () => {
-    if (!selectedDate || !inputName || !startTime || !endTime || !userId) return;
+    if (!selectedDate || !inputName || !startTime || !endTime || !userId)
+      return;
 
     try {
       const startDateTime = new Date(selectedDate);
@@ -146,15 +147,15 @@ const Calendar: React.FC<CalendarProps> = ({ classFilter, condensed }) => {
 
   return (
     <button
-    onClick={(e) => {
-      // Only navigate if the active element is not an input or textarea
-      const tag = document.activeElement?.tagName.toLowerCase();
-      if (tag !== "input" && tag !== "textarea") {
-        navigate("/monthlycalendar");
-      }
-    }}
-    style={{ border: "none", backgroundColor: "white", cursor: "pointer" }}
-  >
+      onClick={() => {
+        // Only navigate if the active element is not an input or textarea
+        const tag = document.activeElement?.tagName.toLowerCase();
+        if (tag !== "input" && tag !== "textarea") {
+          navigate("/monthlycalendar");
+        }
+      }}
+      style={{ border: "none", backgroundColor: "white", cursor: "pointer" }}
+    >
       <div
         onWheel={handleWheel}
         style={{
@@ -176,6 +177,7 @@ const Calendar: React.FC<CalendarProps> = ({ classFilter, condensed }) => {
               key={i}
               style={{
                 backgroundColor: isToday ? "#BEB5AA" : "#FFFFFF",
+                width: "7.75vw",
                 padding: ".5rem",
                 textAlign: "center",
                 borderRadius: "25px",
@@ -198,26 +200,26 @@ const Calendar: React.FC<CalendarProps> = ({ classFilter, condensed }) => {
                 }}
               >
                 {[...(events[key] || [])]
-  .sort((a, b) => a.start.getTime() - b.start.getTime())
-  .map((event, idx) => (
-    <div
-      key={idx}
-      style={{
-        backgroundColor: "#fff",
-        color: "#3c2f2f",
-        padding: "8px 12px",
-        borderRadius: "8px",
-        boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
-        marginBottom: "0.5rem",
-        fontSize: "0.85rem",
-        fontWeight: 400,
-        lineHeight: 1.4,
-      }}
-    >
-      <div style={{ fontWeight: 600 }}>{event.time}</div>
-      <div style={{ fontStyle: "italic" }}>{event.title}</div>
-    </div>
-))}
+                  .sort((a, b) => a.start.getTime() - b.start.getTime())
+                  .map((event, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        backgroundColor: "#fff",
+                        color: "#3c2f2f",
+                        padding: "8px 12px",
+                        borderRadius: "8px",
+                        boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
+                        marginBottom: "0.5rem",
+                        fontSize: "0.85rem",
+                        fontWeight: 400,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      <div style={{ fontWeight: 600 }}>{event.time}</div>
+                      <div style={{ fontStyle: "italic" }}>{event.title}</div>
+                    </div>
+                  ))}
               </div>
               <button
                 onClick={(e) => {
@@ -300,7 +302,13 @@ const Calendar: React.FC<CalendarProps> = ({ classFilter, condensed }) => {
                 style={styles.input}
               />
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "0.5rem",
+              }}
+            >
               <button
                 onClick={() => setEventModalOpen(false)}
                 style={{
