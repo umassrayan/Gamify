@@ -6,6 +6,11 @@ interface UserStreak {
   streak: number;
 }
 
+interface LeaderboardProps {
+  classCode: string;
+}
+
+// Mock data for now — replace with Firestore fetch later
 const fakeData: UserStreak[] = [
   { userId: "1", displayName: "Alice", streak: 5 },
   { userId: "2", displayName: "Bob", streak: 12 },
@@ -16,13 +21,14 @@ const fakeData: UserStreak[] = [
 
 const MAX_STREAK_GOAL = 21;
 
-const Leaderboard: React.FC = () => {
+const Leaderboard: React.FC<LeaderboardProps> = ({ classCode }) => {
   const [users, setUsers] = useState<UserStreak[]>([]);
 
   useEffect(() => {
+    // Later: Fetch class-specific user streaks using classCode
     const sorted = [...fakeData].sort((a, b) => b.streak - a.streak);
     setUsers(sorted);
-  }, []);
+  }, [classCode]);
 
   const getMedal = (rank: number) => {
     if (rank === 0) return "🥇";
@@ -33,7 +39,6 @@ const Leaderboard: React.FC = () => {
 
   return (
     <div style={boardStyle}>
-      <h2 style={titleStyle}>Leaderboard</h2>
       <table style={tableStyle}>
         <thead style={theadStyle}>
           <tr>
@@ -131,3 +136,4 @@ const progressBar: React.CSSProperties = {
 };
 
 export default Leaderboard;
+

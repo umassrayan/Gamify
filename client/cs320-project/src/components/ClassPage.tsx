@@ -5,16 +5,10 @@ import ProgressBar from "./ProgressBar";
 import Account from "./Account";
 import Calendar from "./Calendar";
 import FocusTimer from "./FocusTimer";
+import Leaderboard from "./Leaderboard";
 import { AnimatePresence } from "framer-motion";
 import AccountSettings from "./AccountSettings";
 
-// Utility function to format duration from seconds
-function formatDuration(totalSeconds: number) {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  return `${hours}h ${minutes}m ${seconds}s`;
-}
 
 const ClassPage: React.FC = () => {
   const { id: classCode } = useParams<{ id: string }>();
@@ -48,23 +42,22 @@ const ClassPage: React.FC = () => {
           gap: "20px",
         }}
       >
-        <Calendar classFilter={classCode} />
+        {/* Calendar */}
+        <Calendar classFilter={undefined} />
 
+        {/* Focus + Leaderboard + ClassBoard */}
         <div style={{ display: "flex", gap: "20px", flexGrow: 1 }}>
-          {/* Left: Focus + Time Summary */}
-          <div style={{ flex: 2, display: "flex", flexDirection: "column" }}>
-            <FocusTimer
-              classCode={classCode}
-              setWeeklySeconds={setWeeklySeconds}
-            />
-            <div style={{ marginTop: "1rem", textAlign: "center" }}>
-              {/* <div style={{ fontWeight: "bold" }}>
-                {formatDuration(weeklySeconds)} Focused this week
-              </div> */}
+          {/* Left: Focus Timer + Leaderboard side-by-side */}
+          <div style={{ flex: 2, display: "flex", gap: "20px" }}>
+            <div style={{ flex: 1 }}>
+              <FocusTimer classCode={classCode} setWeeklySeconds={setWeeklySeconds} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <Leaderboard classCode={classCode} />
             </div>
           </div>
 
-          {/* Right: Class board */}
+          {/* Right: Class Board */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "20px" }}>
             <ClassBoard />
           </div>
@@ -75,5 +68,4 @@ const ClassPage: React.FC = () => {
 };
 
 export default ClassPage;
-
 
