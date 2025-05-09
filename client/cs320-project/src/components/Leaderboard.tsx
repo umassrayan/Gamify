@@ -76,7 +76,7 @@ const Leaderboard: React.FC = () => {
   );
 };
 
-// 🎨 Styles
+// Styles
 const boardStyle: React.CSSProperties = {
   backgroundColor: "#f4f1ee",
   borderRadius: "8px",

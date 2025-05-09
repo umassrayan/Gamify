@@ -64,11 +64,7 @@ const Calendar: React.FC<CalendarProps> = ({ classFilter, condensed }) => {
         const end = event.endTime.toDate();
         const eventClass = event.classCode || ""; // <- Firestore field
 
-        if (
-          start >= startOfWeek &&
-          start < endOfWeek &&
-          (!classFilter || eventClass === classFilter)
-        ) {
+        if (start >= startOfWeek && start < endOfWeek) {
           const key = start.toDateString();
           const eventEntry: CalendarEvent = {
             time: `${formatTime(start)} – ${formatTime(end)}`,
