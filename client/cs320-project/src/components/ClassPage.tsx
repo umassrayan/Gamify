@@ -40,6 +40,7 @@ const ClassPage: React.FC = () => {
                 <AnimatePresence>{isSidebarOpen && <AccountSettings onClose={() => setSidebarOpen(false)} />}</AnimatePresence>
             </div>
 
+
             {/* Main content */}
             {/* <div
         style={{
