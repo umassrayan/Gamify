@@ -1,42 +1,152 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* src/App.css */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    color: #333;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.App {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.App-header {
+    background-color: #2c3e50;
+    padding: 20px;
+    color: white;
+    margin-bottom: 30px;
+    border-radius: 0 0 8px 8px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.App-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.card {
-  padding: 2em;
+.page-container {
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
 }
 
-.read-the-docs {
-  color: #888;
+.class-attendance-module {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 5px;
+    background-color: #fff;
 }
+
+.class-attendance-module h3 {
+    margin-top: 0;
+    color: #3498db;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+nav li {
+    margin-bottom: 10px;
+    background-color: #ecf0f1;
+    padding: 10px;
+    border-radius: 4px;
+}
+nav li a {
+    text-decoration: none;
+    color: #2980b9;
+    font-weight: bold;
+}
+nav li a:hover {
+    color: #3498db;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 5px;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.controls {
+    margin: 15px 0;
+}
+
+.status-message {
+    margin: 10px 0;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 0.95em;
+}
+
+.proximity-status.in-radius {
+    color: #27ae60; /* Green */
+    font-weight: bold;
+}
+.proximity-status.out-radius {
+    color: #c0392b; /* Red */
+    font-weight: bold;
+}
+
+.loading-message {
+    color: #7f8c8d;
+}
+.error-message {
+    color: #e74c3c; /* Red */
+    background-color: #fadbd8;
+    border: 1px solid #f1c6c1;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+.warning-message {
+    color: #f39c12; /* Orange */
+    background-color: #fef5e7;
+    border: 1px solid #fbe4c3;
+    padding: 10px;
+    border-radius: 4px;
+}
+.info-message {
+    color: #3498db; /* Blue */
+    font-size: 0.9em;
+}
+.success-message {
+    color: #2ecc71; /* Green */
+    background-color: #eafaf1;
+    border: 1px solid #d4efdf;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.small-text {
+    font-size: 0.85em;
+    color: #555;
+}
+
+/* Ensure LocationChecker's map container takes precedence or adjust as needed */
+/* The style is already defined inline in LocationChecker.tsx which is usually fine */
