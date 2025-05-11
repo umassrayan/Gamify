@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ClassBoard from './ClassBoard';
@@ -44,10 +45,8 @@ const ClassPage: React.FC = () => {
             {/* Main content */}
             {/* <div
         style={{
-          flex: 1,
           padding: "15px",
-          display: "flex",
-          flexDirection: "column",
+          display: "grid",
           gap: "20px",
         }}
       > */}
