@@ -97,7 +97,7 @@ const ClassPage: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', gap: '20px' }}>
                     <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
-                        <Leaderboard />
+                      <Leaderboard classCode={classCode} />
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <ClassBoard />
