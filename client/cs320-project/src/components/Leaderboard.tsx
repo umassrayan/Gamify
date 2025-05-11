@@ -55,8 +55,6 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ classCode }) => {
           }
         }
 
-        leaderboardData.sort((a, b) => b.streak - a.streak);
-        console.log("🏁 Final leaderboard:", leaderboardData);
         setUsers(leaderboardData);
       } catch (err) {
         console.error("Error fetching leaderboard data:", err);
@@ -67,11 +65,29 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ classCode }) => {
   }, [classCode, currentUser]);
 
   const getMedal = (rank: number) => {
-    if (rank === 0) return "🥇";
-    if (rank === 1) return "🥈";
-    if (rank === 2) return "🥉";
-    return `${rank + 1}`;
+    if (rank === 1) return "🥇";
+    if (rank === 2) return "🥈";
+    if (rank === 3) return "🥉";
+    return `${rank}`;
   };
+
+  // ✅ Accurate tie-aware ranking
+  const rankedAll: (UserStreak & { __rank: number })[] = [];
+  let lastStreak: number | null = null;
+  let lastRank = 0;
+
+  users
+    .sort((a, b) => b.streak - a.streak)
+    .forEach((user, index) => {
+      const isTie = user.streak === lastStreak;
+      const rank = isTie ? lastRank : index + 1;
+
+      rankedAll.push({ ...user, __rank: rank });
+      lastStreak = user.streak;
+      lastRank = rank;
+    });
+
+  const rankedUsers = rankedAll.slice(0, 5);
 
   return (
     <div style={boardStyle}>
@@ -84,14 +100,14 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ classCode }) => {
           </tr>
         </thead>
         <tbody>
-          {users.length === 0 ? (
+          {rankedUsers.length === 0 ? (
             <tr>
               <td colSpan={3} style={{ textAlign: "center", padding: "1rem", color: "#888" }}>
                 No streaks found for {classCode}.
               </td>
             </tr>
           ) : (
-            users.slice(0, 5).map((user, index) => (
+            rankedUsers.map((user, index) => (
               <tr
                 key={user.userId}
                 style={{
@@ -99,7 +115,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ classCode }) => {
                   transition: "background-color 0.3s ease",
                 }}
               >
-                <td style={tdStyle}>{getMedal(index)}</td>
+                <td style={tdStyle}>{getMedal(user.__rank)}</td>
                 <td style={tdStyle}>{user.displayName}</td>
                 <td style={tdStyle}>{user.streak}</td>
               </tr>
