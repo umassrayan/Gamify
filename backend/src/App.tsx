@@ -15,26 +15,31 @@ import './App.css';
 const SAMPLE_CLASS_ID_1 = 'math101';
 const SAMPLE_CLASS_ID_2 = 'physicsLabA';
 
-// --- Dummy Class Data Sets ---
-const allDummyClasses: Record<string, ClassDetails> = {
-  cs101: {
-    id: 'DUMMY_CS101',
-    className: 'Intro to CS (Dummy Set 1)',
-    address: '140 Governors Dr, Amherst, MA 01003',
-    radius: 75,
-  },
-  art202: {
-    id: 'DUMMY_ART202',
-    className: 'Art History (Dummy Set 2)',
-    address: 'lederle graduate research tower',
-    radius: 75,
-  },
-  libraryStudy: {
-    id: 'DUMMY_LIB001',
-    className: 'Library Study Group (Dummy Set 3)',
-    address: 'worcester dining commons',
-    radius: 75,
-  },
+// --- Collection of Dummy Class Data ---
+interface DummyClassCollection {
+    [key: string]: ClassDetails; // Use a string key like "set1", "set2" or a descriptive ID
+}
+
+const allDummyClasses: DummyClassCollection = {
+    cs101: {
+        // Key used in the URL, e.g., /dummy-class/cs101
+        id: 'DUMMY_CS101',
+        className: 'Intro to CS (Dummy Set 1)',
+        address: '140 Governors Dr, Amherst, MA 01003', // UMass CS Building area
+    },
+    art202: {
+        // Key for the second dummy class
+        id: 'DUMMY_ART202',
+        className: 'Art History (Dummy Set 2)',
+        address: 'lederle graduate research tower', // Mead Art Museum
+    },
+    libraryStudy: {
+        id: 'DUMMY_LIB001',
+        className: 'Library Study Group (Dummy Set 3)',
+        address: 'worcester dining commons', // UMass Library
+    },
+    // Add more dummy class sets here with unique keys
+
 };
 
 const dummyUserForTesting = 'testDummyUser456';
