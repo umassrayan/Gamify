@@ -100,6 +100,7 @@ const WeeklyAgenda: React.FC = () => {
         gap: ".25rem",
         borderRadius: "25px",
         marginLeft: "15px",
+        marginTop: "5px",
       }}
     >
       {days.map((label, index) => {
