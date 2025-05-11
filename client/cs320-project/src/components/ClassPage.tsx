@@ -10,6 +10,7 @@ import Leaderboard from './Leaderboard';
 import WeeklyAgenda from './WeeklyAgenda';
 import ToDo from './ToDo';
 import { useCourseProgress } from './ProgressBarHook';
+import ClassAttendanceModule from './attendance/ClassAttendanceModule'; // Adjust path
 
 // Utility function to format duration from seconds
 function formatDuration(totalSeconds: number) {
@@ -18,6 +19,7 @@ function formatDuration(totalSeconds: number) {
     const seconds = totalSeconds % 60;
     return `${hours}h ${minutes}m ${seconds}s`;
 }
+const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const ClassPage: React.FC = () => {
     const { id: classCode } = useParams<{ id: string }>();
@@ -26,7 +28,9 @@ const ClassPage: React.FC = () => {
     const courseProgress = useCourseProgress(); // <<< Use the hook here
 
     const { day } = useParams(); // read day from URL (like /todo/Monday)
-
+    if (!googleMapsApiKey) {
+        return <div style={{ padding: '20px', color: 'red' }}>Error: Google Maps API Key is not configured.</div>;
+    }
     if (!classCode) {
         return <div>Error: Class not found!</div>;
     }
@@ -39,7 +43,6 @@ const ClassPage: React.FC = () => {
                 <Account onClick={() => setSidebarOpen(true)} />
                 <AnimatePresence>{isSidebarOpen && <AccountSettings onClose={() => setSidebarOpen(false)} />}</AnimatePresence>
             </div>
-
 
             {/* Main content */}
             {/* <div
@@ -93,6 +96,10 @@ const ClassPage: React.FC = () => {
             >
                 <div style={{ display: 'flex', marginTop: '10px' }}>
                     <FocusTimer classCode={classCode} setWeeklySeconds={setWeeklySeconds} />
+                    <div style={{ flex: 1 }}>
+                        {/* --- SIMPLIFIED MODULE USAGE --- */}
+                        <ClassAttendanceModule googleMapsApiKey={googleMapsApiKey} />
+                    </div>
                     {/* -----------------------INSERT GOOGLE LOCATION HERE-------------------------- */}
                     {day ? <ToDo day={day} /> : <WeeklyAgenda />}
                 </div>
