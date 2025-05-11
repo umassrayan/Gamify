@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
 
 interface UserStreak {
   userId: string;
@@ -10,25 +13,58 @@ interface LeaderboardProps {
   classCode: string;
 }
 
-// Mock data for now — replace with Firestore fetch later
-const fakeData: UserStreak[] = [
-  { userId: "1", displayName: "Alice", streak: 5 },
-  { userId: "2", displayName: "Bob", streak: 12 },
-  { userId: "3", displayName: "Charlie", streak: 8 },
-  { userId: "4", displayName: "Dana", streak: 3 },
-  { userId: "5", displayName: "Eli", streak: 10 },
-];
-
-const MAX_STREAK_GOAL = 21;
-
 const Leaderboard: React.FC<LeaderboardProps> = ({ classCode }) => {
+  const { currentUser } = useAuth();
   const [users, setUsers] = useState<UserStreak[]>([]);
 
   useEffect(() => {
-    // Later: Fetch class-specific user streaks using classCode
-    const sorted = [...fakeData].sort((a, b) => b.streak - a.streak);
-    setUsers(sorted);
-  }, [classCode]);
+    const fetchLeaderboardData = async () => {
+      if (!currentUser || !classCode) return;
+
+      console.log("📊 Fetching leaderboard for class:", classCode);
+
+      try {
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        const leaderboardData: UserStreak[] = [];
+
+        for (const userDoc of usersSnapshot.docs) {
+          const userId = userDoc.id;
+          const userData = userDoc.data();
+          const coursesSnapshot = await getDocs(
+            collection(db, `users/${userId}/courses`)
+          );
+
+          for (const courseDoc of coursesSnapshot.docs) {
+            const courseData = courseDoc.data();
+
+            if (!Array.isArray(courseData.classes)) continue;
+
+            const matchedClass = courseData.classes.find(
+              (cls: any) =>
+                cls.name === classCode && typeof cls.streak === "number"
+            );
+
+            if (matchedClass) {
+              leaderboardData.push({
+                userId,
+                displayName: userData.name || "Unknown",
+                streak: matchedClass.streak,
+              });
+              break;
+            }
+          }
+        }
+
+        leaderboardData.sort((a, b) => b.streak - a.streak);
+        console.log("🏁 Final leaderboard:", leaderboardData);
+        setUsers(leaderboardData);
+      } catch (err) {
+        console.error("Error fetching leaderboard data:", err);
+      }
+    };
+
+    fetchLeaderboardData();
+  }, [classCode, currentUser]);
 
   const getMedal = (rank: number) => {
     if (rank === 0) return "🥇";
@@ -45,13 +81,17 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ classCode }) => {
             <th style={thStyle}>Rank</th>
             <th style={thStyle}>User</th>
             <th style={thStyle}>Streak</th>
-            <th style={thStyle}>Progress</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((user, index) => {
-            const progress = Math.min(user.streak / MAX_STREAK_GOAL, 1);
-            return (
+          {users.length === 0 ? (
+            <tr>
+              <td colSpan={3} style={{ textAlign: "center", padding: "1rem", color: "#888" }}>
+                No streaks found for {classCode}.
+              </td>
+            </tr>
+          ) : (
+            users.slice(0, 5).map((user, index) => (
               <tr
                 key={user.userId}
                 style={{
@@ -62,19 +102,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ classCode }) => {
                 <td style={tdStyle}>{getMedal(index)}</td>
                 <td style={tdStyle}>{user.displayName}</td>
                 <td style={tdStyle}>{user.streak}</td>
-                <td style={tdStyle}>
-                  <div style={progressContainer}>
-                    <div
-                      style={{
-                        ...progressBar,
-                        width: `${progress * 100}%`,
-                      }}
-                    />
-                  </div>
-                </td>
               </tr>
-            );
-          })}
+            ))
+          )}
         </tbody>
       </table>
     </div>
@@ -88,12 +118,6 @@ const boardStyle: React.CSSProperties = {
   padding: "10px",
   position: "relative",
   height: "32vh",
-};
-
-const titleStyle: React.CSSProperties = {
-  margin: "0 0 10px 0",
-  color: "#3c2f2f",
-  fontSize: "20px",
 };
 
 const tableStyle: React.CSSProperties = {
@@ -123,17 +147,4 @@ const tdStyle: React.CSSProperties = {
   color: "#4a403a",
 };
 
-const progressContainer: React.CSSProperties = {
-  backgroundColor: "#ddd",
-  height: "8px",
-  borderRadius: "4px",
-  overflow: "hidden",
-};
-
-const progressBar: React.CSSProperties = {
-  backgroundColor: "#5a4c42",
-  height: "100%",
-};
-
 export default Leaderboard;
-
