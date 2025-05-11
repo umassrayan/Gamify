@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import ClassBoard from "./ClassBoard";
 import ProgressBar from "./ProgressBar";
 import Account from "./Account";
-import Calendar from "./Calendar";
 import FocusTimer from "./FocusTimer";
 import Leaderboard from "./Leaderboard";
 import { AnimatePresence } from "framer-motion";
