@@ -1,0 +1,116 @@
+/* Styles for ClassAttendanceModule.css */
+
+.class-attendance-module {
+    /* --- Border and Background --- */
+    border: 1px solid #594c44; /* Thin border with your dark theme color */
+    /* Or a more subtle grey: border: 1px solid #cccccc; */
+    background-color: #fdfdfd; /* A very light grey, or transparent, or #BEB5AA to match FocusTimer */
+    border-radius: 20px; /* Consistent with FocusTimer's potential new radius */
+    padding: 20px; /* Adjust padding as needed */
+
+    /* --- Sizing and Centering the Module --- */
+    /* This module is likely a flex item in ClassPage.tsx.
+       Its wrapper in ClassPage was given flex: 1.
+       So, these control the module's content within that allocated space. */
+    max-width: 300px; /* Constrain the width of the module itself */
+    margin: 15px; /* Or align with other elements */
+    max-height: 400px;
+    /* --- Content Alignment & Font --- */
+    text-align: center; /* Center inline or inline-block children, and text */
+    font-family: inherit; /* Use the app's default font */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Optional: very subtle shadow */
+}
+
+/* --- Styling for the Map (LocationChecker) --- */
+/* The LocationChecker component itself has containerStyle for width/height.
+     You can add margin below it if needed. */
+.class-attendance-module > div:has(> .google-map) {
+    /* A way to target LocationChecker's wrapper if it has a map */
+    margin-bottom: 20px; /* Space between map and the button controls */
+}
+/* If LocationChecker doesn't have a specific class you can target,
+     you might need to wrap it in a div inside ClassAttendanceModule's JSX
+     and apply margin to that div. Or adjust margin-top of the .controls div below. */
+
+/* --- Styling for the Controls Div (wrapping the button) --- */
+.class-attendance-module .controls {
+    margin-top: 20px; /* Ensures space if map's margin-bottom isn't enough/targeted */
+}
+
+/* --- Main Attendance Button Styling --- */
+.attendance-button {
+    background-color: #594c44; /* Dark brown from your theme */
+    color: white;
+    border: none;
+    padding: 12px 20px; /* Adjust padding for size: (top/bottom left/right) */
+    font-size: 1.1rem; /* Adjust font size */
+    font-weight: bold;
+    border-radius: 10px; /* Consistent rounded corners */
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+
+    /* --- Centering the button itself (if not full-width) --- */
+    display: block; /* Makes it a block element to accept margin auto */
+    width: auto; /* Let padding and content define width */
+    min-width: 180px; /* Example minimum width */
+    margin-left: auto; /* Center the block */
+    margin-right: auto; /* Center the block */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); /* Subtle shadow for the button */
+}
+
+.attendance-button:hover:not(:disabled) {
+    background-color: #4a3d35; /* Slightly darker shade for hover */
+    transform: translateY(-1px); /* Slight lift on hover */
+}
+
+.attendance-button:active:not(:disabled) {
+    transform: translateY(0px); /* Press down effect */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-button:disabled {
+    background-color: #a0a0a0; /* Grey out when disabled */
+    color: #e0e0e0;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* --- Refresh Location Button (Optional Styling) --- */
+.secondary-button {
+    /* If you added this class to the "Refresh Location" button */
+    background-color: transparent;
+    color: #594c44; /* Theme color for text */
+    border: 1px solid #594c44; /* Theme color for border */
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.secondary-button:hover:not(:disabled) {
+    background-color: #f0efee; /* Very light beige on hover */
+}
+
+.secondary-button:disabled {
+    color: #999999;
+    border-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* --- Status, Error, and Info Messages --- */
+.class-attendance-module .status-message,
+.class-attendance-module .error-message,
+.class-attendance-module .info-message {
+    margin-top: 12px;
+    font-size: 0.9em;
+    padding: 0 10px; /* Add some horizontal padding if messages are long */
+}
+
+.class-attendance-module .error-message {
+    color: #c83737; /* A slightly less harsh red */
+    background-color: #fdecea; /* Light red background for errors */
+    border: 1px solid #f5c6cb;
+    padding: 8px;
+    border-radius: 4px;
+}
