@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ClassBoard from './ClassBoard';
@@ -14,12 +13,7 @@ import { useCourseProgress } from './ProgressBarHook';
 import ClassAttendanceModule from './attendance/ClassAttendanceModule'; // Adjust path
 
 // Utility function to format duration from seconds
-function formatDuration(totalSeconds: number) {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    return `${hours}h ${minutes}m ${seconds}s`;
-}
+
 const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const ClassPage: React.FC = () => {
@@ -104,7 +98,7 @@ const ClassPage: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', gap: '20px' }}>
                     <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
-                      <Leaderboard classCode={classCode} />
+                        <Leaderboard classCode={classCode} />
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <ClassBoard />
