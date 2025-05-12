@@ -53,7 +53,9 @@ const ClassAttendanceModule: React.FC<ClassAttendanceModuleProps> = ({ googleMap
     const usingFirestore = !initialClassDetails && !!effectiveClassId && !!effectiveUserId;
 
     const [parentCourseDocId, setParentCourseDocId] = useState<string | null>(null);
-
+    console.log(locationError);
+    console.log(attendanceStatus);
+    console.log(parentCourseDocId);
     useEffect(() => {
         if (authLoading) {
             // Wait for auth state to resolve
@@ -191,6 +193,7 @@ const ClassAttendanceModule: React.FC<ClassAttendanceModuleProps> = ({ googleMap
             (error) => {
                 // ... error handling ...
                 setLoadingUserLocation(false);
+                console.log(error);
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
         );
@@ -275,7 +278,7 @@ const ClassAttendanceModule: React.FC<ClassAttendanceModuleProps> = ({ googleMap
     if (!currentClassDisplayDetails) return <p className="error-message">No class details to display.</p>;
 
     const { className = 'Unnamed Class', address, radius = 75 } = currentClassDisplayDetails;
-
+    console.log(className);
     // ... (rest of the render logic remains largely the same, using 'className', 'address', 'radius')
     // It will use `effectiveUserId` for display messages if needed.
 

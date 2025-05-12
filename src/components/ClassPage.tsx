@@ -21,7 +21,7 @@ const ClassPage: React.FC = () => {
     const [weeklySeconds, setWeeklySeconds] = useState(0);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const courseProgress = useCourseProgress(); // <<< Use the hook here
-
+    console.log(weeklySeconds);
     const { day } = useParams(); // read day from URL (like /todo/Monday)
     if (!googleMapsApiKey) {
         return <div style={{ padding: '20px', color: 'red' }}>Error: Google Maps API Key is not configured.</div>;
