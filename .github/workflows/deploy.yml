@@ -1,0 +1,75 @@
+# .github/workflows/deploy.yml
+
+name: Build and Deploy React App to GitHub Pages
+
+# Controls when the workflow will run
+on:
+    # Triggers the workflow on push events but only for the main/master branch
+    push:
+        branches:
+            - main # Or 'master', or whatever your default branch is named
+
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+# Sets permissions for the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+    # This workflow contains a single job called "build-and-deploy"
+    build-and-deploy:
+        # The type of runner that the job will run on
+        runs-on: ubuntu-latest
+        # Environment variables available to all steps in this job
+        # IMPORTANT:
+        # Ensure your GitHub Secrets are named exactly as referenced here after "secrets."
+        # For example, for VITE_FIREBASE_API_KEY, you should have a GitHub Secret named VITE_FIREBASE_API_KEY
+        env:
+            # Environment variables for your Vite project
+            VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+            VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+            # NODE_ENV: production # Often set automatically by build tools like Vite for production builds
+
+        # Steps represent a sequence of tasks that will be executed as part of the job
+        steps:
+            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            # Sets up Node.js in the runner
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20' # Or '18', '16', etc. Specify the Node.js version your project uses.
+
+            # Installs project dependencies
+            - name: Install dependencies
+              run: npm install
+
+            # Builds your React application
+            # The environment variables defined in the `env:` block above are available to this step
+            # Vite uses 'npm run build' by default for production builds.
+            # 'npm run dev' is typically for local development only.
+            - name: Build application
+              run: npm run build
+
+            # Configures GitHub Pages
+            - name: Setup Pages
+              uses: actions/configure-pages@v5
+
+            # Uploads the build artifact (your static site files) to GitHub Pages
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  # IMPORTANT: This path should be the directory where your build output is located.
+                  # For Vite projects, it's usually 'dist'
+                  path: './dist'
+
+            # Deploys the uploaded artifact to GitHub Pages
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4
